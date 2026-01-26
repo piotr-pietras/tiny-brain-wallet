@@ -1,19 +1,22 @@
 {
   "name": "tiny-brain-wallet",
   "version": "0.0.1",
-  "main": "src/main/dist/index.js",
-  "scripts": {
-    "app:dir": "electron-builder --dir",
-    "app:dist": "electron-builder"
-  },
-  "author": "",
+  "description": "A minimalistic crypto HD wallet",
+  "author": "Piotr Pietras <pietraspiotr94@gmail.com>",
   "license": "ISC",
-  "description": "",
+  "main": "src/main/out/index.js",
+  "scripts": {
+    "bundle": "node bundler.js",
+    "start": "node bundler.js --start",
+    "start:dev": "node bundler.js --start --watch ",
+    "build": "npx electron-builder --linux --win"
+  },
   "devDependencies": {
-    "@types/node": "^25.0.3",
+    "@electron-forge/cli": "^7.6.1",
+    "@types/node": "~22.7.7",
     "@types/react": "^19.2.7",
     "electron": "^39.2.7",
-    "electron-builder": "^26.5.0",
+    "electron-builder": "^26.4.0",
     "esbuild": "^0.27.2",
     "typescript": "^5.9.3"
   },
@@ -29,6 +32,26 @@
   },
   "build": {
     "appId": "com.tinybrainwallet.app",
-    "productName": "Tiny Brain Wallet"
+    "productName": "tinybrainwallet",
+    "icon": "res/icon.png",
+    "electronLanguages": [
+      "en-US",
+      "en-GB"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "extraResources": [
+        "res"
+      ],
+      "artifactName": "tinybrainwallet-${version}-windows-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "artifactName": "tinybrainwallet-${version}-linux-${arch}.${ext}"
+    }
   }
 }

@@ -12,10 +12,11 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
-    title: "Tiny Brain Wallet",
+    titleBarStyle: "hidden",
+    titleBarOverlay: true,
   });
 
-  win.loadFile("src/renderer/dist/index.html");
+  win.loadFile("src/renderer/out/index.html");
 };
 
 export const restartWindow = () => {

@@ -1,8 +1,29 @@
 # Tiny Brain Wallet
 
+> Don't trust verify
+
+## Contents
+
+- [Goal](#goal)
+  - [Minimal Dependencies](#minimal-dependencies)
+- [Crypto](#crypto)
+  - [Bitcoin](#bitcoin)
+- [Security](#security)
+  - [Layer 1: OS-Provided Encryption (Wallet File Protection)](#layer-1-os-provided-encryption-wallet-file-protection)
+  - [Layer 2: Password-Based Encryption (Mnemonic Protection)](#layer-2-password-based-encryption-mnemonic-protection)
+  - [Security Architecture Summary](#security-architecture-summary)
+- [Architecture](#architecture)
+  - [Inter-Process Communication (IPC)](#inter-process-communication-ipc)
+- [File Structure](#file-structure)
+- [Core Functionalities (IPC Handlers)](#core-functionalities-ipc-handlers)
+  - [Wallet Management](#wallet-management)
+  - [Bitcoin Operations](#bitcoin-operations)
+  - [Application](#application)
+- [License](#license)
+
 ## Goal
 
-The goal of this project is to create an **easy-to-audit HD brain wallet** with a **minimal set of dependencies**. By keeping the dependency tree small and the architecture simple, security auditors and developers can quickly understand and verify the wallet's behavior without navigating through complex dependency chains.
+The goal of this project is to create an **easy-to-audit crypto HD wallet** with a **minimal set of dependencies**. By keeping the dependency tree small and the architecture simple, security auditors and developers can quickly understand and verify the wallet's behavior without navigating through complex dependency chains.
 
 ### Minimal Dependencies
 
@@ -19,6 +40,16 @@ The wallet aims to keep dependencies to a minimum. Current runtime dependencies:
 - **react-router** - Routing
 
 All other functionality is implemented from scratch to maintain transparency and auditability.
+
+## Crypto
+
+This section summarizes the cryptographic primitives and protocol features currently implemented in the wallet.
+
+### Bitcoin
+
+- **API provider**: [Mempool](https://mempool.space/)
+- **Supported address type**: Native SegWit (P2WPKH)
+- **UTXO management**: UTXO discovery and selection
 
 ---
 
@@ -189,48 +220,25 @@ tiny-brain-wallet/
 All core functionalities are declared in `src/main/ipc.ts`. The renderer process communicates with these handlers via inter-process communication. The following operations are available:
 
 ### Wallet Management
+
 - `store-wallet` - Store a new wallet (encrypted)
 - `get-wallets` - Retrieve list of all wallets
 - `get-wallet-node` - Derive an address (from mnemonic + path) and return mempool data
 - `delete-wallet` - Delete a wallet file
 
 ### Bitcoin Operations
+
 - `derive-path` - Build a BIP32 derivation path from options
 - `generate-mnemonic` - Generate a new BIP39 mnemonic
 - `is-address-valid` - Validate Bitcoin address
 - `send-transaction` - Create, sign, and broadcast transaction
 
 ### Application
+
 - `restart-window` - Restart the application window
-
----
-
-## Development
-
-### Prerequisites
-- Node.js
-- npm
-
-### Setup
-```bash
-npm install
-```
-
-### Development Commands
-```bash
-# Start Electron app (in one terminal)
-make devStart
-
-# Watch and build renderer (in another terminal)
-make devRenderer
-
-# Watch and build main process (in another terminal)
-make devMain
-```
 
 ---
 
 ## License
 
 MIT
-
