@@ -241,4 +241,4 @@ All core functionalities are declared in `src/main/ipc.ts`. The renderer process
 
 ## License
 
-MIT
+ISC

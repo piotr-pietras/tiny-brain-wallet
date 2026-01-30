@@ -52,9 +52,9 @@ export class MempoolClient {
       body: tx,
     });
     if (!response.ok) {
-      const error = await response.json();
-      console.error("Post transaction to Mempool client error:", error);
-      throw new Error(error);
+      const res = await response.json();
+      console.error("Post transaction to Mempool client error:", res);
+      throw new Error(res.error);
     }
     return response.text();
   }

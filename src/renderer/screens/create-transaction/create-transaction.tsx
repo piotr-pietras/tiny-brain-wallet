@@ -9,14 +9,12 @@ import { UtxoCard } from "../../components/UtxoCard";
 import { NoteBox } from "../../components/NoteBox";
 import { toBtc } from "../../helpers/toBtc";
 import { Button } from "../../components/Button";
-import { SignTransactionModal } from "../../modals/sign-transaction";
-import {
-  GetAddressResponse,
-  GetAddressUtxosResponse,
-  ReturnedWalletNode,
-} from "../../../types";
+import { TransactionResultModal } from "../../modals/transaction-result";
+import { GetAddressUtxosResponse, ReturnedWalletNode } from "../../../types";
 import { NodesPersisterContext } from "../../context/nodesPersister";
 import { Ipc } from "../../ipc";
+import { EnterPasswordModal } from "../../modals/enter-password";
+import { unwrapIpcError } from "../../helpers/unwrapIpcError";
 
 export default function CreateTransactionScreen() {
   const { walletFile, nodeId } = useParams();
@@ -25,8 +23,11 @@ export default function CreateTransactionScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [showSignTransactionModal, setShowSignTransactionModal] =
     useState(false);
+  const [showEnterPasswordModal, setShowEnterPasswordModal] = useState(false);
   const [node, setNode] = useState<ReturnedWalletNode | null>(null);
   const [utxos, setUtxos] = useState<GetAddressUtxosResponse | null>(null);
+  const [txId, setTxId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const form = useCreateTransactionForm(node);
 
   const loadNode = async () => {
@@ -51,27 +52,53 @@ export default function CreateTransactionScreen() {
     navigate(-1);
   };
 
-  const handleCancelSign = () => {
-    setShowSignTransactionModal(false);
-  };
-
   const handleCreate = async () => {
     const isValid = await form.validate();
     if (!isValid) return;
 
-    setShowSignTransactionModal(true);
+    setShowEnterPasswordModal(true);
   };
 
   if (isLoading) return <Loader fullScreen />;
 
+  const handleSign = async (password: string) => {
+    const transactionInputs = await form.get();
+    try {
+      const result = await Ipc.sendTransaction(transactionInputs, password);
+      setErrorMessage("");
+      setTxId(result);
+      setShowSignTransactionModal(true);
+      setShowEnterPasswordModal(false);
+    } catch (error) {
+      if (unwrapIpcError(error).includes("Invalid wallet password")) {
+        throw error;
+      }
+      setErrorMessage(unwrapIpcError(error));
+      setShowSignTransactionModal(true);
+      setShowEnterPasswordModal(false);
+    }
+  };
+
+  const handleDone = () => {
+    setShowSignTransactionModal(false);
+    setShowEnterPasswordModal(false);
+    if (txId && !errorMessage) navigate(-1);
+  };
+
   return (
     <>
       {showSignTransactionModal && (
-        <SignTransactionModal
-          onCancel={handleCancelSign}
-          onDone={handleCancel}
-          form={form}
-          wallet={node}
+        <TransactionResultModal
+          onDone={handleDone}
+          node={node!}
+          txId={txId}
+          errorMessage={errorMessage}
+        />
+      )}
+      {showEnterPasswordModal && (
+        <EnterPasswordModal
+          onCancel={() => setShowEnterPasswordModal(false)}
+          onAccept={handleSign}
         />
       )}
       <View style={{ padding: "16px" }} gap={16}>

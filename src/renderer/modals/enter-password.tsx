@@ -4,6 +4,7 @@ import { Card } from "../components/Card";
 import { Text } from "../components/Text";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
+import { unwrapIpcError } from "../helpers/unwrapIpcError";
 
 type Props = {
   onAccept: (password: string) => Promise<void>;
@@ -21,7 +22,7 @@ export function EnterPasswordModal({ onCancel, onAccept }: Props) {
       setError("");
       await onAccept(password);
     } catch (error) {
-      setError(error.message);
+      setError(unwrapIpcError(error));
     } finally {
       setIsLoading(false);
     }
@@ -54,7 +55,7 @@ export function EnterPasswordModal({ onCancel, onAccept }: Props) {
             />
             {error && (
               <Text type="label" style={{ color: "var(--error)" }}>
-                Invalid password
+                {error}
               </Text>
             )}
           </View>
