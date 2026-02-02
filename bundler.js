@@ -36,8 +36,10 @@ execSync("cp src/renderer/public/* src/renderer/out/ -r");
 
 if (start) {
   console.info("⚙️  Starting the app...");
-  console.info(
-    "🔥 Hot reloading mode for renderer files...\n👀 To see changes use Ctrl+Shift+R"
-  );
+  if (watch) {
+    console.info(
+      "🔥 Hot reloading mode for renderer files...\n👀 To see changes use Ctrl+Shift+R"
+    );
+  }
   execSync("npx electron .", { stdio: "inherit" });
 }

@@ -22,7 +22,9 @@ export function useCreateTransactionForm(wallet: ReturnedWalletNode | null) {
 
   const isUtxoSelected = useCallback(
     (utxo: UtxoMempool) => {
-      return _selectedUtxos.some((u) => u.txid === utxo.txid);
+      return _selectedUtxos.some(
+        (u) => u.txid === utxo.txid && u.vout === utxo.vout
+      );
     },
     [_selectedUtxos]
   );
@@ -30,8 +32,10 @@ export function useCreateTransactionForm(wallet: ReturnedWalletNode | null) {
   const selectUtxo = useCallback(
     (utxo: UtxoMempool) => {
       setSelectedUtxos((prev) => {
-        if (prev.some((u) => u.txid === utxo.txid)) {
-          return prev.filter((u) => u.txid !== utxo.txid);
+        if (prev.some((u) => u.txid === utxo.txid && u.vout === utxo.vout)) {
+          return prev.filter(
+            (u) => !(u.txid === utxo.txid && u.vout === utxo.vout)
+          );
         }
         return [...prev, utxo];
       });
