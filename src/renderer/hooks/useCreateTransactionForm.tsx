@@ -6,6 +6,8 @@ import {
 } from "../../types";
 import { Ipc } from "../ipc";
 import {
+  OP_RETURN_HEADER_SIZE,
+  OP_RETURN_MAX_SIZE,
   P2WPKH_DUST,
   P2WPKH_HEADER_SIZE,
   P2WPKH_INPUT_SIZE,
@@ -19,6 +21,7 @@ export function useCreateTransactionForm(wallet: ReturnedWalletNode | null) {
   const [_selectedUtxos, setSelectedUtxos] = useState<UtxoMempool[]>([]);
   const [_amount, _setAmount] = useState<string>("");
   const [_feeRate, _setFeeRate] = useState<string>("1");
+  const [_opReturnData, _setOpReturnData] = useState<string>("");
 
   const isUtxoSelected = useCallback(
     (utxo: UtxoMempool) => {
@@ -45,10 +48,15 @@ export function useCreateTransactionForm(wallet: ReturnedWalletNode | null) {
 
   const overview = useMemo(() => {
     const balance = _selectedUtxos.reduce((p, c) => p + c.value, 0);
+    const opReturnSize =
+      _opReturnData.length > 0
+        ? OP_RETURN_HEADER_SIZE + new TextEncoder().encode(_opReturnData).length
+        : 0;
     const size =
       P2WPKH_HEADER_SIZE +
       _selectedUtxos.length * P2WPKH_INPUT_SIZE +
-      P2WPKH_OUTPUT_SIZE * numberOfOutputs;
+      P2WPKH_OUTPUT_SIZE * numberOfOutputs +
+      opReturnSize;
     const fee = Math.ceil(Number(_feeRate) * size);
     const spendable = balance - fee;
     const exchange = Math.max(spendable - Number(_amount), 0);
@@ -65,10 +73,11 @@ export function useCreateTransactionForm(wallet: ReturnedWalletNode | null) {
       amount: Number(_amount),
       feeRate: Number(_feeRate),
       fee,
+      opReturnSize,
       size,
       exchange,
     };
-  }, [_selectedUtxos, _feeRate, _amount, numberOfOutputs]);
+  }, [_selectedUtxos, _feeRate, _amount, numberOfOutputs, _opReturnData]);
 
   const validate = useCallback(
     async (name?: string) => {
@@ -116,11 +125,32 @@ export function useCreateTransactionForm(wallet: ReturnedWalletNode | null) {
         }
       }
 
+      const checkOpReturnData = name === "opReturnData" || !name;
+      if (checkOpReturnData) {
+        console.log(overview.opReturnSize);
+        console.log(OP_RETURN_MAX_SIZE);
+        if (overview.opReturnSize > OP_RETURN_MAX_SIZE) {
+          newErrors.set(
+            "opReturnData",
+            "OP return data must be less than 100000 bytes"
+          );
+        }
+      }
+
       setErrors(Object.fromEntries(newErrors));
       if (Object.keys(Object.fromEntries(newErrors)).length > 0) return false;
       return true;
     },
-    [errors, _toAddress, _amount, _feeRate, _selectedUtxos, overview.spendable]
+    [
+      errors,
+      _toAddress,
+      _amount,
+      _feeRate,
+      _selectedUtxos,
+      _opReturnData,
+      overview.spendable,
+      overview.opReturnSize,
+    ]
   );
 
   const get = useCallback(async (): Promise<TransactionInputs> => {
@@ -141,6 +171,7 @@ export function useCreateTransactionForm(wallet: ReturnedWalletNode | null) {
       fee: overview.fee,
       exchange: overview.exchange,
       selectedUtxos: _selectedUtxos,
+      opReturnData: _opReturnData ?? undefined,
     };
   }, [wallet, _toAddress, _amount, _feeRate, _selectedUtxos, validate]);
 
@@ -183,5 +214,7 @@ export function useCreateTransactionForm(wallet: ReturnedWalletNode | null) {
     setFeeRate: _setFeeRate,
     amount: _amount,
     setAmount: _setAmount,
+    opReturnData: _opReturnData,
+    setOpReturnData: _setOpReturnData,
   };
 }

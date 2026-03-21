@@ -1,6 +1,6 @@
 import React, { useContext, useMemo, useState } from "react";
 import { View } from "../../components/View";
-import { useDeriveAccountForm } from "../../hooks/useDeriveAccountForm";
+import { useDeriveNodeForm } from "../../hooks/useDeriveNodeForm";
 import { Text } from "../../components/Text";
 import { Selector } from "../../components/Selector";
 import { useNavigate, useParams } from "react-router";
@@ -16,7 +16,7 @@ import { Icon } from "../../components/Icon";
 export default function DeriveNodeScreen() {
   const { walletFile } = useParams();
   const navigate = useNavigate();
-  const form = useDeriveAccountForm();
+  const form = useDeriveNodeForm();
   const { setNode, getNodeId, getNodes } = useContext(NodesPersisterContext);
   const [showEnterPasswordModal, setShowEnterPasswordModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

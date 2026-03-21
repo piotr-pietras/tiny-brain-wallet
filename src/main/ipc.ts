@@ -46,16 +46,29 @@ export const registerHandlers = () => {
       const derivedPath = HD.buildDerivedPath(derivedOptions);
       const privateKey = await HD.derivePrivateKey(masterKey, derivedPath);
       if (!privateKey) return null;
-      const address = BtcAddress.createP2wpkh(
-        privateKey,
-        derivedOptions.network
-      );
-      return {
-        walletFile,
-        derivedPath,
-        derivedOptions,
-        address,
-      };
+
+      switch (derivedOptions.blockchain) {
+        case "bitcoin":
+          return {
+            walletFile,
+            derivedPath,
+            derivedOptions,
+            address: BtcAddress.createP2wpkh(
+              privateKey,
+              derivedOptions.network
+            ),
+          };
+        case "ethereum":
+          return {
+            walletFile,
+            derivedPath,
+            derivedOptions,
+            address: "0x0000000000000000000000000000000000000000",
+          };
+        default:
+          // @ts-ignore
+          throw new Error(`Invalid blockchain: ${derivedOptions?.blockchain}`);
+      }
     }
   );
   ipcMain.handle(
@@ -79,14 +92,13 @@ export const registerHandlers = () => {
   ipcMain.handle(
     "send-transaction",
     async (_, inputs: BitcoinTransactionInputs, password: string) => {
-      const { walletFile: file, derivedOptions: derivedPathOptions } =
-        inputs.wallet;
-      const mempool = new MempoolClient(derivedPathOptions.network);
+      const { walletFile, derivedOptions } = inputs.wallet;
+      const mempool = new MempoolClient(derivedOptions.network);
       const transaction = new BtcTransaction(mempool);
       await transaction.create(inputs, { rbf: true });
       const txHex = await Wallet.signTransaction(
-        file,
-        derivedPathOptions,
+        walletFile,
+        derivedOptions,
         transaction,
         password
       );

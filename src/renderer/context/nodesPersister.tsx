@@ -50,6 +50,7 @@ export function NodesPersisterProvider({
       ([, node]) =>
         node.derivedPath === derivedPath &&
         node.walletFile === walletFile &&
+        node.derivedOptions.blockchain === derivedOptions.blockchain &&
         node.derivedOptions.network === derivedOptions.network
     )?.[0];
   };

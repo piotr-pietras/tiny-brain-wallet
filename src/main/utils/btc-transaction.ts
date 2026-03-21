@@ -10,7 +10,6 @@ export interface Output {
 }
 
 interface Options {
-  opReturnData?: string;
   rbf?: boolean;
 }
 
@@ -40,7 +39,7 @@ export class BtcTransaction implements Signable<string> {
     }
 
     const vin = await this.prepareP2wpkhInputs(inputs.selectedUtxos);
-    const vout = this.prepareOutputs(inputs, options?.opReturnData);
+    const vout = this.prepareOutputs(inputs, inputs.opReturnData);
     this._psbt = new Psbt({ network: this._network })
       .addInputs(vin)
       .addOutputs(vout);

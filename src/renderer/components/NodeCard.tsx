@@ -14,6 +14,8 @@ export function NodeCard({ node, onClick }: Props) {
     switch (node.derivedOptions.blockchain) {
       case "bitcoin":
         return require("../assets/bitcoin-icon.svg");
+      case "ethereum":
+        return require("../assets/ethereum-icon.svg");
       default:
         return null;
     }

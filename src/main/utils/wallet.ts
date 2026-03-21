@@ -52,7 +52,7 @@ export class Wallet {
 
   static async signTransaction<T>(
     walletFile: string,
-    derivedPathOptions: DerivedOptions,
+    derivedOptions: DerivedOptions,
     signable: Signable<T>,
     password: string
   ): Promise<T> {
@@ -68,7 +68,7 @@ export class Wallet {
         wallet.masterKeyEncrypted,
         password
       );
-      const derivePath = HD.buildDerivedPath(derivedPathOptions);
+      const derivePath = HD.buildDerivedPath(derivedOptions);
       const privateKey = await HD.derivePrivateKey(masterKey, derivePath);
       if (!privateKey) throw new Error("Invalid private key");
 

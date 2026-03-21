@@ -113,6 +113,7 @@ export default function CreateTransactionScreen() {
               onChange={form.setToAddress}
               form={form}
               name="toAddress"
+              placeholder="Enter the recipient address"
             />
           </View>
           <View>
@@ -156,6 +157,7 @@ export default function CreateTransactionScreen() {
                 onChange={form.setAmount}
                 form={form}
                 name="amount"
+                placeholder="Enter the amount to send"
               />
               <Button text="Send All" type="text" onClick={form.setSpendAll} />
             </View>
@@ -174,6 +176,22 @@ export default function CreateTransactionScreen() {
             />
             <Text type="label">💸 Fee: {form.overview.fee} satoshi</Text>
           </View>
+          <details >
+            <summary style={{ cursor: "pointer" }}>Advanced options</summary>
+            <View style={{ marginTop: 8 }}>
+              <Text type="label">OP Return Data:</Text>
+              <Text type="label" bold>(String is utf-8 encoded into array of bytes)</Text>
+              <Input
+                type="text"
+                multiline
+                value={form.opReturnData}
+                onChange={form.setOpReturnData}
+                form={form}
+                name="opReturnData"
+                placeholder="Enter the OP return data"
+              />
+            </View>
+          </details>
           <View direction="row" gap={32} style={{ marginTop: 16 }}>
             <Button text="Cancel  " type="text" onClick={handleCancel} />
             <Button
