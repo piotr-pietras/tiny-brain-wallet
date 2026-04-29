@@ -5,6 +5,8 @@ import {
   DerivedOptions,
   ReturnedWalletNode,
   BitcoinNetwork,
+  EthereumNetwork,
+  EthereumTransactionInputs,
 } from "../types";
 import { Wallet } from "./utils/wallet";
 import { Crypto } from "./utils/crypto";
@@ -14,6 +16,9 @@ import { BtcTransaction } from "./utils/btc-transaction";
 import { restartWindow } from ".";
 import * as bip39 from "bip39";
 import { HD } from "./utils/hd";
+import { EthAddress } from "./utils/eth-address";
+import { DrpcClient } from "./utils/drpc-client";
+import { EthTransaction } from "./utils/eth-transacton";
 
 export const registerHandlers = () => {
   ipcMain.handle("restart-window", () => restartWindow());
@@ -63,7 +68,7 @@ export const registerHandlers = () => {
             walletFile,
             derivedPath,
             derivedOptions,
-            address: "0x0000000000000000000000000000000000000000",
+            address: EthAddress.createAddress(privateKey),
           };
         default:
           // @ts-ignore
@@ -82,15 +87,25 @@ export const registerHandlers = () => {
       return { overview, utxos };
     }
   );
+  ipcMain.handle(
+    "get-ethereum-balance",
+    async (_, address: string, network: EthereumNetwork) => {
+      const drpc = new DrpcClient(network);
+      return drpc.getBalance(address);
+    }
+  );
   ipcMain.handle("derive-path", async (_, derivedOptions: DerivedOptions) =>
     HD.buildDerivedPath(derivedOptions)
   );
   ipcMain.handle("generate-mnemonic", () => bip39.generateMnemonic());
-  ipcMain.handle("is-address-valid", (_, address: string) =>
+  ipcMain.handle("is-bitcoin-address-valid", (_, address: string) =>
     BtcAddress.isAddressValid(address)
   );
+  ipcMain.handle("is-ethereum-address-valid", (_, address: string) =>
+    EthAddress.isAddressValid(address)
+  );
   ipcMain.handle(
-    "send-transaction",
+    "send-bitcoin-transaction",
     async (_, inputs: BitcoinTransactionInputs, password: string) => {
       const { walletFile, derivedOptions } = inputs.wallet;
       const mempool = new MempoolClient(derivedOptions.network);
@@ -103,6 +118,23 @@ export const registerHandlers = () => {
         password
       );
       const result = await mempool.postTransaction(txHex);
+      return result;
+    }
+  );
+  ipcMain.handle(
+    "send-ethereum-transaction",
+    async (_, inputs: EthereumTransactionInputs, password: string) => {
+      const { walletFile, derivedOptions } = inputs.wallet;
+      const drpc = new DrpcClient(derivedOptions.network);
+      const transaction = new EthTransaction(drpc);
+      await transaction.create(inputs);
+      const txHex = await Wallet.signTransaction(
+        walletFile,
+        derivedOptions,
+        transaction,
+        password
+      );
+      const result = await drpc.sendRawTransaction(txHex);
       return result;
     }
   );

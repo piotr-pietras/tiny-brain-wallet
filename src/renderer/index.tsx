@@ -5,11 +5,13 @@ import AppLayout from "./_layout";
 import WalletsScreen from "./screens/wallets/wallets";
 import StartScreen from "./screens/start/start";
 import CreateWalletScreen from "./screens/create-wallet/create-wallet";
-import NodeScreen from "./screens/node/node";
-import CreateTransactionScreen from "./screens/create-transaction/create-transaction";
+import BtcNodeScreen from "./screens/node/btc-node";
 import Header from "./components/Header";
 import DeriveNodeScreen from "./screens/derive-node/derive-node";
 import { NodesPersisterProvider } from "./context/nodesPersister";
+import EthNodeScreen from "./screens/node/eth-node";
+import BtcCreateTransactionScreen from "./screens/create-transaction/btc-create-transaction";
+import EthCreateTransactionScreen from "./screens/create-transaction/eth-create-transaction";
 
 function App() {
   return (
@@ -27,13 +29,21 @@ function App() {
                   element={<DeriveNodeScreen />}
                 />
                 <Route
-                  path="/wallet/:walletFile/node/:nodeId"
-                  element={<NodeScreen />}
+                  path="/wallet/:walletFile/btc-node/:nodeId"
+                  element={<BtcNodeScreen />}
+                />
+                <Route
+                  path="/wallet/:walletFile/eth-node/:nodeId"
+                  element={<EthNodeScreen />}
                 />
               </Route>
               <Route
-                path="/wallet/:walletFile/node/:nodeId/create-transaction"
-                element={<CreateTransactionScreen />}
+                path="/wallet/:walletFile/btc-node/:nodeId/btc-create-transaction"
+                element={<BtcCreateTransactionScreen />}
+              />
+              <Route
+                path="/wallet/:walletFile/eth-node/:nodeId/eth-create-transaction"
+                element={<EthCreateTransactionScreen />}
               />
             </Route>
           </Route>

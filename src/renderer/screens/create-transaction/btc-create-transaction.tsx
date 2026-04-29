@@ -2,39 +2,42 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { View } from "../../components/View";
 import { Text } from "../../components/Text";
-import { useCreateTransactionForm } from "../../hooks/useCreateTransactionForm";
 import { Input } from "../../components/Input";
 import { Loader } from "../../components/Loader";
 import { UtxoCard } from "../../components/UtxoCard";
 import { NoteBox } from "../../components/NoteBox";
-import { toBtc } from "../../helpers/toBtc";
 import { Button } from "../../components/Button";
 import { TransactionResultModal } from "../../modals/transaction-result";
-import { GetAddressUtxosResponse, ReturnedWalletNode } from "../../../types";
+import {
+  GetAddressUtxosResponse,
+  ReturnedBitcoinWalletNode,
+} from "../../../types";
 import { NodesPersisterContext } from "../../context/nodesPersister";
 import { Ipc } from "../../ipc";
 import { EnterPasswordModal } from "../../modals/enter-password";
 import { unwrapIpcError } from "../../helpers/unwrapIpcError";
+import { useCreateBitcoinTransactionForm } from "../../hooks/useCreateBitcoinTransactionForm";
+import { toBtc } from "../../helpers/unit";
 
-export default function CreateTransactionScreen() {
-  const { walletFile, nodeId } = useParams();
+export default function BtcCreateTransactionScreen() {
+  const { nodeId } = useParams();
   const { getNode } = useContext(NodesPersisterContext);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [showSignTransactionModal, setShowSignTransactionModal] =
     useState(false);
   const [showEnterPasswordModal, setShowEnterPasswordModal] = useState(false);
-  const [node, setNode] = useState<ReturnedWalletNode | null>(null);
+  const [node, setNode] = useState<ReturnedBitcoinWalletNode | null>(null);
   const [utxos, setUtxos] = useState<GetAddressUtxosResponse | null>(null);
   const [txId, setTxId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const form = useCreateTransactionForm(node);
+  const form = useCreateBitcoinTransactionForm(node);
 
   const loadNode = async () => {
-    const node = getNode(nodeId!);
+    const node = getNode(nodeId!) as ReturnedBitcoinWalletNode;
     if (!node) throw new Error("Node not found");
 
-    const { utxos } = await Ipc.getBitcoinAddressInfo(
+    const { utxos } = await Ipc.getMempoolData(
       node.address,
       node.derivedOptions.network
     );
@@ -64,7 +67,10 @@ export default function CreateTransactionScreen() {
   const handleSign = async (password: string) => {
     const transactionInputs = await form.get();
     try {
-      const result = await Ipc.sendTransaction(transactionInputs, password);
+      const result = await Ipc.sendBitcoinTransaction(
+        transactionInputs,
+        password
+      );
       setErrorMessage("");
       setTxId(result);
       setShowSignTransactionModal(true);
@@ -176,11 +182,13 @@ export default function CreateTransactionScreen() {
             />
             <Text type="label">💸 Fee: {form.overview.fee} satoshi</Text>
           </View>
-          <details >
+          <details>
             <summary style={{ cursor: "pointer" }}>Advanced options</summary>
             <View style={{ marginTop: 8 }}>
               <Text type="label">OP Return Data:</Text>
-              <Text type="label" bold>(String is utf-8 encoded into array of bytes)</Text>
+              <Text type="label" bold>
+                (String is utf-8 encoded into array of bytes)
+              </Text>
               <Input
                 type="text"
                 multiline

@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useState } from "react";
 import {
+  BitcoinTransactionInputs,
+  ReturnedBitcoinWalletNode,
   ReturnedWalletNode,
-  TransactionInputs,
   UtxoMempool,
 } from "../../types";
 import { Ipc } from "../ipc";
@@ -14,7 +15,9 @@ import {
   P2WPKH_OUTPUT_SIZE,
 } from "../const";
 
-export function useCreateTransactionForm(wallet: ReturnedWalletNode | null) {
+export function useCreateBitcoinTransactionForm(
+  wallet: ReturnedBitcoinWalletNode | null
+) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [numberOfOutputs, setNumberOfOutputs] = useState<number>(2);
   const [_toAddress, _setToAddress] = useState<string>("");
@@ -87,7 +90,7 @@ export function useCreateTransactionForm(wallet: ReturnedWalletNode | null) {
         if (!_toAddress) {
           newErrors.set("toAddress", "Recipient address is required");
         } else {
-          const { valid, network } = await Ipc.isAddressValid(_toAddress);
+          const { valid, network } = await Ipc.isBitcoinAddressValid(_toAddress);
           if (!valid || wallet?.derivedOptions.network !== network) {
             newErrors.set("toAddress", "Invalid recipient address");
           }
@@ -153,7 +156,7 @@ export function useCreateTransactionForm(wallet: ReturnedWalletNode | null) {
     ]
   );
 
-  const get = useCallback(async (): Promise<TransactionInputs> => {
+  const get = useCallback(async (): Promise<BitcoinTransactionInputs> => {
     setErrors({});
     const isValid = await validate();
     if (!isValid) {

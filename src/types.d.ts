@@ -2,7 +2,7 @@ import { Psbt } from "bitcoinjs-lib";
 
 export type Blockchain = "bitcoin" | "ethereum";
 export type BitcoinNetwork = "mainnet" | "testnet4" | "easy-regtest";
-export type EthereumNetwork = "sepolia";
+export type EthereumNetwork = "mainnet" | "sepolia";
 export type BitcoinAddressType = "p2wpkh";
 export type PrivateKeyCreationWay =
   | "mnemonic"
@@ -57,7 +57,7 @@ export type BitcoinDerivedOptions = BaseDerivedOptions & {
 
 export type DerivedOptions = BitcoinDerivedOptions | EthereumDerivedOptions;
 
-type BaseReturnedWalletNode = {
+export type BaseReturnedWalletNode = {
   walletFile: string;
   derivedPath: string;
   address: string;
@@ -83,10 +83,15 @@ type BitcoinTransactionInputs = {
   opReturnData?: string;
 };
 
-export type TransactionInputs = BitcoinTransactionInputs;
+export type EthereumTransactionInputs = {
+  wallet: ReturnedEthereumWalletNode;
+  toAddress: string;
+  amount: bigint;
+  gasPrice: bigint;
+};
+
 export interface Signable<T> {
   signer: (privateKey: string) => Promise<T>;
-  psbt: Psbt;
 }
 
 export interface BridgeApi {
@@ -100,20 +105,28 @@ export interface BridgeApi {
     password: string,
     derivedPathOptions: DerivedOptions
   ) => Promise<ReturnedWalletNode | null>;
-  getBitcoinAddressInfo: (
+  getMempoolData: (
     address: string,
     network: BitcoinNetwork
   ) => Promise<{
     overview: GetAddressResponse;
     utxos: GetAddressUtxosResponse;
   }>;
+  getEthereumBalance: (address: string, network: EthereumNetwork) => Promise<string>;
   derivePath: (derivedOptions: DerivedOptions) => Promise<string>;
   generateMnemonic: () => Promise<string>;
-  isAddressValid: (
+  isBitcoinAddressValid: (
     address: string
   ) => Promise<{ valid: boolean; network?: BitcoinNetwork }>;
-  sendTransaction: (
+  isEthereumAddressValid: (
+    address: string
+  ) => Promise<{ valid: boolean }>;
+  sendBitcoinTransaction: (
     inputs: BitcoinTransactionInputs,
+    password: string
+  ) => Promise<string>;
+  sendEthereumTransaction: (
+    inputs: EthereumTransactionInputs,
     password: string
   ) => Promise<string>;
 }

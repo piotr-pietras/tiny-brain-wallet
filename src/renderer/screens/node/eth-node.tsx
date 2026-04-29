@@ -1,73 +1,46 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
-  GetAddressResponse,
-  GetAddressUtxosResponse,
+  ReturnedEthereumWalletNode,
   ReturnedWalletNode,
 } from "../../../types";
 import { Loader } from "../../components/Loader";
 import { Text } from "../../components/Text";
 import { View } from "../../components/View";
-import { toBtc } from "../../helpers/toBtc";
 import { Icon } from "../../components/Icon";
 import { Button } from "../../components/Button";
-import { UtxoCard } from "../../components/UtxoCard";
 import { NodesPersisterContext } from "../../context/nodesPersister";
 import { Divider } from "../../components/Divider";
 import { Ipc } from "../../ipc";
+import { formatEther } from "ethers";
 
-export default function NodeScreen() {
+export default function EthNodeScreen() {
   const { walletFile, nodeId } = useParams();
   const { getNode, deleteNode } = useContext(NodesPersisterContext);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [node, setNode] = useState<ReturnedWalletNode | null>(null);
-  const [overview, setOverview] = useState<GetAddressResponse | null>(null);
-  const [utxos, setUtxos] = useState<GetAddressUtxosResponse | null>(null);
+  const [balance, setBalance] = useState<string>("0");
 
   const loadNode = async () => {
-    const node = getNode(nodeId!);
+    const node = getNode(nodeId!) as ReturnedEthereumWalletNode;
     if (!node) throw new Error("Node not found");
-
-    const { overview, utxos } = await Ipc.getBitcoinAddressInfo(
+    const balance = await Ipc.getEthereumBalance(
       node.address,
       node.derivedOptions.network
     );
+
     setNode(node);
-    setOverview(overview);
-    setUtxos(utxos);
+    setBalance(balance);
     setIsLoading(false);
   };
 
-  const displayableData = useMemo(() => {
-    const chainStats = overview?.chain_stats;
-    const mempoolStats = overview?.mempool_stats;
-    const confirmedBalance = chainStats
-      ? toBtc(chainStats.funded_txo_sum - chainStats.spent_txo_sum)
-      : 0;
-    const unconfirmedBalance = mempoolStats
-      ? toBtc(mempoolStats.funded_txo_sum - mempoolStats.spent_txo_sum)
-      : 0;
-    const totalBalance = confirmedBalance + unconfirmedBalance;
-    return {
-      confirmedBalance,
-      unconfirmedBalance,
-      totalBalance,
-      utxos: utxos?.map((utxo) => ({
-        ...utxo,
-        value: toBtc(utxo.value), // display value in BTC
-      })),
-    };
-  }, [overview, utxos]);
-
-  const mempoolAddressUrl = useMemo(() => {
+  const etherscanAddressUrl = useMemo(() => {
     switch (node?.derivedOptions.network) {
       case "mainnet":
-        return `https://mempool.space/address/${node?.address}`;
-      case "testnet4":
-        return `https://mempool.space/testnet4/address/${node?.address}`;
-      case "easy-regtest":
-        return `https://mempool.bitcoin-easy-regtest.com/address/${node?.address}`;
+        return `https://etherscan.io/address/${node?.address}`;
+      case "sepolia":
+        return `https://sepolia.etherscan.io/address/${node?.address}`;
     }
   }, [node]);
 
@@ -80,7 +53,7 @@ export default function NodeScreen() {
   };
 
   const handleCreateTransaction = () => {
-    navigate(`/wallet/${walletFile!}/node/${nodeId!}/create-transaction`);
+    navigate(`/wallet/${walletFile!}/eth-node/${nodeId!}/eth-create-transaction`);
   };
 
   useEffect(() => {
@@ -144,51 +117,23 @@ export default function NodeScreen() {
         </View>
         <View>
           <Text type="label">Total Balance</Text>
-          <Text bold>{displayableData.totalBalance} BTC</Text>
+          <Text bold>{formatEther(BigInt(balance))} ETH</Text>
         </View>
-        <View>
-          <Text type="label">Confirmed Balance</Text>
-          <Text>{displayableData.confirmedBalance} BTC</Text>
-        </View>
-        {displayableData.unconfirmedBalance !== 0 && (
-          <View>
-            <Text type="label">Unconfirmed Balance</Text>
-            <Text>{displayableData.unconfirmedBalance} BTC</Text>
-          </View>
-        )}
         <View gap={0} style={{ width: "100%" }}>
           <Text type="label">
             In order to see the transaction history any many more you have to
             visit mempool website:
           </Text>
           <a
-            href={mempoolAddressUrl}
+            href={etherscanAddressUrl}
             target="_blank"
             style={{ fontWeight: "bold", fontSize: 12 }}
           >
-            {mempoolAddressUrl}
+            {etherscanAddressUrl}
           </a>
         </View>
       </View>
       <Divider />
-      <View gap={16} style={{ width: "100%" }}>
-        <View direction="row">
-          <Text type="title" bold>
-            📃 Usable UTXOs
-          </Text>
-        </View>
-        {displayableData.utxos && displayableData.utxos.length > 0 ? (
-          <View direction="row">
-            {displayableData.utxos.map((utxo) => (
-              <UtxoCard key={utxo.txid} utxo={utxo} type="large" />
-            ))}
-          </View>
-        ) : (
-          <Text type="body" style={{ color: "var(--on-surface-variant)" }}>
-            No UTXOs available
-          </Text>
-        )}
-      </View>
     </View>
   );
 }

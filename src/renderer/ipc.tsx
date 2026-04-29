@@ -3,6 +3,8 @@ import {
   BitcoinTransactionInputs,
   DerivedOptions,
   BitcoinNetwork,
+  EthereumNetwork,
+  EthereumTransactionInputs,
 } from "../types";
 
 export class Ipc {
@@ -30,10 +32,14 @@ export class Ipc {
     return window.api.getWalletNode(file, password, derivedOptions);
   }
 
-  static getBitcoinAddressInfo(address: string, network: BitcoinNetwork) {
-    return window.api.getBitcoinAddressInfo(address, network);
+  static getMempoolData(address: string, network: BitcoinNetwork) {
+    return window.api.getMempoolData(address, network);
   }
-  
+
+  static getEthereumBalance(address: string, network: EthereumNetwork) {
+    return window.api.getEthereumBalance(address, network);
+  }
+
   static derivePath(derivedOptions: DerivedOptions) {
     return window.api.derivePath(derivedOptions);
   }
@@ -42,11 +48,19 @@ export class Ipc {
     return window.api.generateMnemonic();
   }
 
-  static isAddressValid(address: string) {
-    return window.api.isAddressValid(address);
+  static isBitcoinAddressValid(address: string) {
+    return window.api.isBitcoinAddressValid(address);
   }
 
-  static sendTransaction(inputs: BitcoinTransactionInputs, password: string) {
-    return window.api.sendTransaction(inputs, password);
+  static isEthereumAddressValid(address: string) {
+    return window.api.isEthereumAddressValid(address);
+  }
+
+  static sendBitcoinTransaction(inputs: BitcoinTransactionInputs, password: string) {
+    return window.api.sendBitcoinTransaction(inputs, password);
+  }
+
+  static sendEthereumTransaction(inputs: EthereumTransactionInputs, password: string) {
+    return window.api.sendEthereumTransaction(inputs, password);
   }
 }

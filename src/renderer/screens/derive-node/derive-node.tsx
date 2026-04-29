@@ -43,7 +43,14 @@ export default function DeriveNodeScreen() {
         return;
       }
       nodeId = await getNodeId(walletFile!, derivedOptions);
-      navigate(`/wallet/${walletFile}/node/${nodeId}`);
+      switch (derivedOptions.blockchain) {
+        case "bitcoin":
+          navigate(`/wallet/${walletFile}/btc-node/${nodeId}`);
+          break;
+        case "ethereum":
+          navigate(`/wallet/${walletFile}/eth-node/${nodeId}`);
+          break;
+      }
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +58,14 @@ export default function DeriveNodeScreen() {
 
   const handleNodeClick = async (derivedOptions: DerivedOptions) => {
     const nodeId = await getNodeId(walletFile!, derivedOptions);
-    navigate(`/wallet/${walletFile}/node/${nodeId}`);
+    switch (derivedOptions.blockchain) {
+      case "bitcoin":
+        navigate(`/wallet/${walletFile}/btc-node/${nodeId}`);
+        break;
+      case "ethereum":
+        navigate(`/wallet/${walletFile}/eth-node/${nodeId}`);
+        break;
+    }
   };
 
   const handleDeleteWallet = async () => {
