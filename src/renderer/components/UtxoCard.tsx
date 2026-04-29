@@ -3,7 +3,7 @@ import { UtxoMempool } from "../../types";
 import { Card } from "./Card";
 import { View } from "./View";
 import { Text } from "./Text";
-import { toBtc } from "../helpers/toBtc";
+import { toBtc } from "../helpers/unit";
 
 type Props = {
   type: "small" | "large";

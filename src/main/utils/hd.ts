@@ -27,8 +27,11 @@ export class HD {
           default:
             throw new Error(`Invalid address type: ${options.addressType}`);
         }
+      case "ethereum":
+        return `m/44'/60'/${options.account}'/${options.change}/${options.index}`;
       default:
-        throw new Error(`Invalid blockchain: ${options.blockchain}`);
+        // @ts-ignore
+        throw new Error(`Invalid blockchain: ${options?.blockchain}`);
     }
   }
 }

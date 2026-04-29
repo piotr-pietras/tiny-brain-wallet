@@ -1,9 +1,13 @@
 import { Psbt } from "bitcoinjs-lib";
 
-export type Blockchain = "bitcoin";
+export type Blockchain = "bitcoin" | "ethereum";
 export type BitcoinNetwork = "mainnet" | "testnet4" | "easy-regtest";
+export type EthereumNetwork = "mainnet" | "sepolia";
 export type BitcoinAddressType = "p2wpkh";
-export type PrivateKeyCreationWay = "mnemonic" | "custom mnemonic" | "masterkey";
+export type PrivateKeyCreationWay =
+  | "mnemonic"
+  | "custom mnemonic"
+  | "masterkey";
 
 export type Encrypted = { salt: string; iv: string; data: string };
 
@@ -13,7 +17,10 @@ export interface ToStoreWalletData {
   password: string;
 }
 
-type StoredWalletData = Omit<ToStoreWalletData, "creationWay" | "creationData" | "password"> & {
+type StoredWalletData = Omit<
+  ToStoreWalletData,
+  "creationWay" | "creationData" | "password"
+> & {
   masterKeyEncrypted: Encrypted;
 };
 
@@ -24,7 +31,22 @@ export type ReturnedWalletData = Omit<
   file: string;
 };
 
-export type BitcoinDerivedOptions = {
+type BaseDerivedOptions = {
+  blockchain: Blockchain;
+  account: string;
+  change: string;
+  index: string;
+};
+
+export type EthereumDerivedOptions = BaseDerivedOptions & {
+  blockchain: "ethereum";
+  network: EthereumNetwork;
+  account: string;
+  change: string;
+  index: string;
+};
+
+export type BitcoinDerivedOptions = BaseDerivedOptions & {
   blockchain: "bitcoin";
   addressType: BitcoinAddressType;
   network: BitcoinNetwork;
@@ -33,16 +55,23 @@ export type BitcoinDerivedOptions = {
   index: string;
 };
 
-export type DerivedOptions = BitcoinDerivedOptions;
+export type DerivedOptions = BitcoinDerivedOptions | EthereumDerivedOptions;
 
-type ReturnedBitcoinWalletNode = {
+export type BaseReturnedWalletNode = {
   walletFile: string;
   derivedPath: string;
-  derivedOptions: BitcoinDerivedOptions;
   address: string;
 };
 
-export type ReturnedWalletNode = ReturnedBitcoinWalletNode;
+type ReturnedBitcoinWalletNode = BaseReturnedWalletNode & {
+  derivedOptions: BitcoinDerivedOptions;
+};
+
+type ReturnedEthereumWalletNode = BaseReturnedWalletNode & {
+  derivedOptions: EthereumDerivedOptions;
+};
+
+export type ReturnedWalletNode = ReturnedBitcoinWalletNode | ReturnedEthereumWalletNode;
 
 type BitcoinTransactionInputs = {
   wallet: ReturnedBitcoinWalletNode;
@@ -51,12 +80,18 @@ type BitcoinTransactionInputs = {
   amount: number;
   fee: number;
   exchange: number;
+  opReturnData?: string;
 };
 
-export type TransactionInputs = BitcoinTransactionInputs;
+export type EthereumTransactionInputs = {
+  wallet: ReturnedEthereumWalletNode;
+  toAddress: string;
+  amount: bigint;
+  gasPrice: bigint;
+};
+
 export interface Signable<T> {
   signer: (privateKey: string) => Promise<T>;
-  psbt: Psbt;
 }
 
 export interface BridgeApi {
@@ -70,20 +105,28 @@ export interface BridgeApi {
     password: string,
     derivedPathOptions: DerivedOptions
   ) => Promise<ReturnedWalletNode | null>;
-  getBitcoinAddressInfo: (
+  getMempoolData: (
     address: string,
     network: BitcoinNetwork
   ) => Promise<{
     overview: GetAddressResponse;
     utxos: GetAddressUtxosResponse;
   }>;
+  getEthereumBalance: (address: string, network: EthereumNetwork) => Promise<string>;
   derivePath: (derivedOptions: DerivedOptions) => Promise<string>;
   generateMnemonic: () => Promise<string>;
-  isAddressValid: (
+  isBitcoinAddressValid: (
     address: string
   ) => Promise<{ valid: boolean; network?: BitcoinNetwork }>;
-  sendTransaction: (
+  isEthereumAddressValid: (
+    address: string
+  ) => Promise<{ valid: boolean }>;
+  sendBitcoinTransaction: (
     inputs: BitcoinTransactionInputs,
+    password: string
+  ) => Promise<string>;
+  sendEthereumTransaction: (
+    inputs: EthereumTransactionInputs,
     password: string
   ) => Promise<string>;
 }
