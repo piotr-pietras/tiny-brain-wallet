@@ -8,6 +8,7 @@
   - [Minimal Dependencies](#minimal-dependencies)
 - [Crypto](#crypto)
   - [Bitcoin](#bitcoin)
+  - [Ethereum](#ethereum)
 - [Security](#security)
   - [Layer 1: OS-Provided Encryption (Wallet File Protection)](#layer-1-os-provided-encryption-wallet-file-protection)
   - [Layer 2: Password-Based Encryption (Mnemonic Protection)](#layer-2-password-based-encryption-mnemonic-protection)
@@ -17,7 +18,9 @@
 - [File Structure](#file-structure)
 - [Core Functionalities (IPC Handlers)](#core-functionalities-ipc-handlers)
   - [Wallet Management](#wallet-management)
+  - [Shared Utilities](#shared-utilities)
   - [Bitcoin Operations](#bitcoin-operations)
+  - [Ethereum Operations](#ethereum-operations)
   - [Application](#application)
 - [License](#license)
 
@@ -38,6 +41,7 @@ The wallet aims to keep dependencies to a minimum. Current runtime dependencies:
 - **react** - UI framework
 - **react-dom** - React DOM renderer
 - **react-router** - Routing
+- **ethers** - Ethereum RPC, wallet, and transaction utilities
 
 All other functionality is implemented from scratch to maintain transparency and auditability.
 
@@ -50,6 +54,14 @@ This section summarizes the cryptographic primitives and protocol features curre
 - **API provider**: [Mempool](https://mempool.space/)
 - **Supported address type**: Native SegWit (P2WPKH)
 - **UTXO management**: UTXO discovery and selection
+
+### Ethereum
+
+- **API provider**: [dRPC](https://drpc.org/)
+- **Supported networks**: Ethereum Mainnet and Sepolia
+- **Address validation**: EVM `0x...` addresses (EIP-55 compatible)
+- **Transaction model**: Account-based (nonce + gas price)
+
 
 ---
 
@@ -171,13 +183,18 @@ tiny-brain-wallet/
 │   │   ├── index.ts                   # Electron app entry point, window management
 │   │   ├── ipc.ts                     # ⭐ Core IPC handlers - all sensitive operations
 │   │   ├── preload.ts                 # Context bridge exposing safe API to renderer
+│   │   ├── const.ts                   # Main-process constants
 │   │   ├── tsconfig.json              # TypeScript configuration
 │   │   │
 │   │   ├── utils/                     # Core wallet functionality
 │   │   │   ├── wallet.ts              # Wallet storage, retrieval, transaction signing
 │   │   │   ├── crypto.ts              # Encryption, decryption, SHA256 hashing
+│   │   │   ├── hd.ts                  # HD wallet derivation helpers (BIP32/BIP44 paths)
 │   │   │   ├── btc-address.ts         # Bitcoin address generation (P2WPKH)
 │   │   │   ├── btc-transaction.ts     # Transaction building and construction
+│   │   │   ├── eth-address.ts         # Ethereum address generation
+│   │   │   ├── eth-transacton.ts      # Ethereum transaction signing/broadcast
+│   │   │   ├── drpc-client.ts         # dRPC API client for Ethereum queries
 │   │   │   └── mempool-client.ts      # Mempool.space API client for blockchain data
 │   │   │
 │   │   └── helpers/
@@ -190,20 +207,14 @@ tiny-brain-wallet/
 │   │   ├── const.ts                   # Application constants
 │   │   │
 │   │   ├── components/                # Reusable UI components
-│   │   │
-│   │   ├── screens/                    # Application screens/pages
-│   │   │
+│   │   ├── screens/                   # Application screens/pages
 │   │   ├── hooks/                     # React custom hooks
-│   │   │
 │   │   ├── modals/                    # Modal components
-│   │   │
 │   │   ├── helpers/                   # UI helper functions
-│   │   │
+│   │   ├── context/                   # React context and persistence state
 │   │   ├── assets/                    # Static assets
-│   │   │
 │   │   ├── public/                    # Public files (HTML, CSS)
-│   │   │
-│   │   └── dist/                      # Build output (generated)
+│   │   └── out/                       # Build output (generated)
 │   │
 │   └── types.d.ts                     # Shared TypeScript type definitions
 │
@@ -223,15 +234,25 @@ All core functionalities are declared in `src/main/ipc.ts`. The renderer process
 
 - `store-wallet` - Store a new wallet (encrypted)
 - `get-wallets` - Retrieve list of all wallets
-- `get-wallet-node` - Derive an address (from mnemonic + path) and return mempool data
+- `get-wallet-node` - Decrypt wallet master key, derive key by path, and return derived address
 - `delete-wallet` - Delete a wallet file
 
-### Bitcoin Operations
+### Shared Utilities
 
 - `derive-path` - Build a BIP32 derivation path from options
 - `generate-mnemonic` - Generate a new BIP39 mnemonic
-- `is-address-valid` - Validate Bitcoin address
-- `send-transaction` - Create, sign, and broadcast transaction
+
+### Bitcoin Operations
+
+- `get-mempool-data` - Fetch address overview and UTXOs from Mempool API
+- `is-bitcoin-address-valid` - Validate Bitcoin address
+- `send-bitcoin-transaction` - Create, sign, and broadcast Bitcoin transaction
+
+### Ethereum Operations
+
+- `get-ethereum-balance` - Fetch address balance from dRPC API
+- `is-ethereum-address-valid` - Validate Ethereum address
+- `send-ethereum-transaction` - Create, sign, and broadcast Ethereum transaction
 
 ### Application
 

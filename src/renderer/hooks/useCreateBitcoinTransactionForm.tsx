@@ -130,8 +130,6 @@ export function useCreateBitcoinTransactionForm(
 
       const checkOpReturnData = name === "opReturnData" || !name;
       if (checkOpReturnData) {
-        console.log(overview.opReturnSize);
-        console.log(OP_RETURN_MAX_SIZE);
         if (overview.opReturnSize > OP_RETURN_MAX_SIZE) {
           newErrors.set(
             "opReturnData",
