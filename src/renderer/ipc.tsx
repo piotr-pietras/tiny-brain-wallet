@@ -7,6 +7,7 @@ import {
   EthereumTransactionInputs,
 } from "../types";
 
+// To remove complexity remove IPC and call window.api directly
 export class Ipc {
   static restartWindow() {
     return window.api.restartWindow();
@@ -62,5 +63,9 @@ export class Ipc {
 
   static sendEthereumTransaction(inputs: EthereumTransactionInputs, password: string) {
     return window.api.sendEthereumTransaction(inputs, password);
+  }
+
+  static getEthereumContractFunctions(abi: string) {
+    return window.api.getEthereumContractFunctions(abi);
   }
 }

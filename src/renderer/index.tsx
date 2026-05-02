@@ -12,43 +12,53 @@ import { NodesPersisterProvider } from "./context/nodesPersister";
 import EthNodeScreen from "./screens/node/eth-node";
 import BtcCreateTransactionScreen from "./screens/create-transaction/btc-create-transaction";
 import EthCreateTransactionScreen from "./screens/create-transaction/eth-create-transaction";
+import { EthContractPersisterProvider } from "./context/ethContractPersister";
+import AddEthContractScreen from "./screens/add-eth-contract/add-eth-contract";
 
 function App() {
   return (
     <NodesPersisterProvider>
-      <HashRouter>
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route index element={<StartScreen />} />
-            <Route path="/wallets" element={<WalletsScreen />} />
-            <Route path="/wallet">
-              <Route path="/wallet/create" element={<CreateWalletScreen />} />
-              <Route element={<Header />}>
+      <EthContractPersisterProvider>
+        <HashRouter>
+          <Routes>
+            <Route element={<AppLayout />}>
+              <Route index element={<StartScreen />} />
+              <Route path="/wallets" element={<WalletsScreen />} />
+              <Route path="/wallet">
+                <Route path="/wallet/create" element={<CreateWalletScreen />} />
+                <Route element={<Header />}>
+                  <Route
+                    path="/wallet/:walletFile/derive-node"
+                    element={<DeriveNodeScreen />}
+                  />
+                  <Route
+                    path="/wallet/:walletFile/btc-node/:nodeId"
+                    element={<BtcNodeScreen />}
+                  />
+                  <Route
+                    path="/wallet/:walletFile/eth-node/:nodeId"
+                    element={<EthNodeScreen />}
+                  />
+                </Route>
                 <Route
-                  path="/wallet/:walletFile/derive-node"
-                  element={<DeriveNodeScreen />}
+                  path="/wallet/:walletFile/btc-node/:nodeId/btc-create-transaction"
+                  element={<BtcCreateTransactionScreen />}
                 />
                 <Route
-                  path="/wallet/:walletFile/btc-node/:nodeId"
-                  element={<BtcNodeScreen />}
-                />
-                <Route
-                  path="/wallet/:walletFile/eth-node/:nodeId"
-                  element={<EthNodeScreen />}
+                  path="/wallet/:walletFile/eth-node/:nodeId/eth-create-transaction"
+                  element={<EthCreateTransactionScreen />}
                 />
               </Route>
-              <Route
-                path="/wallet/:walletFile/btc-node/:nodeId/btc-create-transaction"
-                element={<BtcCreateTransactionScreen />}
-              />
-              <Route
-                path="/wallet/:walletFile/eth-node/:nodeId/eth-create-transaction"
-                element={<EthCreateTransactionScreen />}
-              />
+              <Route element={<Header />}>
+                <Route
+                  path="/add-eth-contract"
+                  element={<AddEthContractScreen />}
+                />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </HashRouter>
+          </Routes>
+        </HashRouter>
+      </EthContractPersisterProvider>
     </NodesPersisterProvider>
   );
 }

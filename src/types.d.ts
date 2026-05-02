@@ -1,4 +1,4 @@
-import { Psbt } from "bitcoinjs-lib";
+import { ethers } from "ethers";
 
 export type Blockchain = "bitcoin" | "ethereum";
 export type BitcoinNetwork = "mainnet" | "testnet4" | "easy-regtest";
@@ -71,7 +71,9 @@ type ReturnedEthereumWalletNode = BaseReturnedWalletNode & {
   derivedOptions: EthereumDerivedOptions;
 };
 
-export type ReturnedWalletNode = ReturnedBitcoinWalletNode | ReturnedEthereumWalletNode;
+export type ReturnedWalletNode =
+  | ReturnedBitcoinWalletNode
+  | ReturnedEthereumWalletNode;
 
 type BitcoinTransactionInputs = {
   wallet: ReturnedBitcoinWalletNode;
@@ -112,15 +114,16 @@ export interface BridgeApi {
     overview: GetAddressResponse;
     utxos: GetAddressUtxosResponse;
   }>;
-  getEthereumBalance: (address: string, network: EthereumNetwork) => Promise<string>;
+  getEthereumBalance: (
+    address: string,
+    network: EthereumNetwork
+  ) => Promise<string>;
   derivePath: (derivedOptions: DerivedOptions) => Promise<string>;
   generateMnemonic: () => Promise<string>;
   isBitcoinAddressValid: (
     address: string
   ) => Promise<{ valid: boolean; network?: BitcoinNetwork }>;
-  isEthereumAddressValid: (
-    address: string
-  ) => Promise<{ valid: boolean }>;
+  isEthereumAddressValid: (address: string) => Promise<{ valid: boolean }>;
   sendBitcoinTransaction: (
     inputs: BitcoinTransactionInputs,
     password: string
@@ -129,6 +132,7 @@ export interface BridgeApi {
     inputs: EthereumTransactionInputs,
     password: string
   ) => Promise<string>;
+  getEthereumContractFunctions: (abi: string) => Promise<ethers.FunctionFragment[]>;
 }
 
 export type GetAddressResponse = {
@@ -191,6 +195,12 @@ export interface TxMempool {
 }
 
 export type GetTxResponse = TxMempool;
+
+export type StoredEthContract = {
+  name: string;
+  address: string;
+  abi: string;
+ };
 
 declare global {
   interface Window {

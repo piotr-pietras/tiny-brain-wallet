@@ -19,6 +19,7 @@ import { HD } from "./utils/hd";
 import { EthAddress } from "./utils/eth-address";
 import { DrpcClient } from "./utils/drpc-client";
 import { EthTransaction } from "./utils/eth-transacton";
+import { EthContract } from "./utils/eth-contract";
 
 export const registerHandlers = () => {
   ipcMain.handle("restart-window", () => restartWindow());
@@ -138,4 +139,8 @@ export const registerHandlers = () => {
       return result;
     }
   );
+  ipcMain.handle("get-ethereum-contract-functions", async (_, abi: string) => {
+    const contract = new EthContract(abi);
+    return contract.functions;
+  });
 };

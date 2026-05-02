@@ -12,6 +12,7 @@ import {
   EthereumNetwork,
   EthereumTransactionInputs,
 } from "../types";
+import { ethers } from "ethers";
 
 const bridgeApi: BridgeApi = {
   versions: () => process.versions,
@@ -58,6 +59,8 @@ const bridgeApi: BridgeApi = {
     password: string
   ): Promise<string> =>
     ipcRenderer.invoke("send-ethereum-transaction", inputs, password),
+  getEthereumContractFunctions: (abi: string): Promise<ethers.FunctionFragment[]> =>
+    ipcRenderer.invoke("get-ethereum-contract-functions", abi),
 };
 
 contextBridge.exposeInMainWorld("api", bridgeApi);

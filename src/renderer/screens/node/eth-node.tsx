@@ -1,9 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import {
-  ReturnedEthereumWalletNode,
-  ReturnedWalletNode,
-} from "../../../types";
+import { ReturnedEthereumWalletNode, ReturnedWalletNode } from "../../../types";
 import { Loader } from "../../components/Loader";
 import { Text } from "../../components/Text";
 import { View } from "../../components/View";
@@ -13,6 +10,7 @@ import { NodesPersisterContext } from "../../context/nodesPersister";
 import { Divider } from "../../components/Divider";
 import { Ipc } from "../../ipc";
 import { formatEther } from "ethers";
+import { Card } from "../../components/Card";
 
 export default function EthNodeScreen() {
   const { walletFile, nodeId } = useParams();
@@ -53,7 +51,13 @@ export default function EthNodeScreen() {
   };
 
   const handleCreateTransaction = () => {
-    navigate(`/wallet/${walletFile!}/eth-node/${nodeId!}/eth-create-transaction`);
+    navigate(
+      `/wallet/${walletFile!}/eth-node/${nodeId!}/eth-create-transaction`
+    );
+  };
+
+  const handleAddEthContract = () => {
+    navigate("/add-eth-contract");
   };
 
   useEffect(() => {
@@ -134,6 +138,35 @@ export default function EthNodeScreen() {
         </View>
       </View>
       <Divider />
+      {/* <View direction="row" gap={16}>
+        {wallets.map((wallet) => (
+          <WalletCard
+            key={wallet.file}
+            wallet={wallet}
+            onClick={() => handleWalletClick(wallet.file)}
+          />
+        ))}
+      </View> */}
+      <Text type="title" bold>
+        📜 Contracts
+      </Text>
+      <Card
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+        onClick={handleAddEthContract}
+      >
+        <Icon
+          name="plus"
+          width={56}
+          height={56}
+          color="var(--primary)"
+          interactive={false}
+        />
+        <Text type="label">Add new contract</Text>
+      </Card>
     </View>
   );
 }

@@ -56,7 +56,13 @@ export default function WalletsScreen() {
         }}
         onClick={handleCreateWallet}
       >
-        <Icon name="plus" width={56} height={56} color="var(--primary)" />
+        <Icon
+          name="plus"
+          width={56}
+          height={56}
+          color="var(--primary)"
+          interactive={false}
+        />
         <Text type="label">Create new wallet</Text>
       </Card>
     </View>
