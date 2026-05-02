@@ -8,7 +8,6 @@ import { Icon } from "../../components/Icon";
 import { Button } from "../../components/Button";
 import { NodesPersisterContext } from "../../context/nodesPersister";
 import { Divider } from "../../components/Divider";
-import { Ipc } from "../../ipc";
 import { formatEther } from "ethers";
 import { Card } from "../../components/Card";
 
@@ -23,7 +22,7 @@ export default function EthNodeScreen() {
   const loadNode = async () => {
     const node = getNode(nodeId!) as ReturnedEthereumWalletNode;
     if (!node) throw new Error("Node not found");
-    const balance = await Ipc.getEthereumBalance(
+    const balance = await window.api.getEthereumBalance(
       node.address,
       node.derivedOptions.network
     );

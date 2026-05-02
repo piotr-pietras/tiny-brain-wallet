@@ -13,7 +13,6 @@ import {
   ReturnedBitcoinWalletNode,
 } from "../../../types";
 import { NodesPersisterContext } from "../../context/nodesPersister";
-import { Ipc } from "../../ipc";
 import { EnterPasswordModal } from "../../modals/enter-password";
 import { unwrapIpcError } from "../../helpers/unwrapIpcError";
 import { useCreateBitcoinTransactionForm } from "../../hooks/useCreateBitcoinTransactionForm";
@@ -37,7 +36,7 @@ export default function BtcCreateTransactionScreen() {
     const node = getNode(nodeId!) as ReturnedBitcoinWalletNode;
     if (!node) throw new Error("Node not found");
 
-    const { utxos } = await Ipc.getMempoolData(
+    const { utxos } = await window.api.getMempoolData(
       node.address,
       node.derivedOptions.network
     );
@@ -67,7 +66,7 @@ export default function BtcCreateTransactionScreen() {
   const handleSign = async (password: string) => {
     const transactionInputs = await form.get();
     try {
-      const result = await Ipc.sendBitcoinTransaction(
+      const result = await window.api.sendBitcoinTransaction(
         transactionInputs,
         password
       );

@@ -3,7 +3,6 @@ import {
   EthereumTransactionInputs,
   ReturnedEthereumWalletNode,
 } from "../../types";
-import { Ipc } from "../ipc";
 import { ETH_TX_GAS_LIMIT } from "../const";
 
 export function useCreateEthereumTransactionForm(
@@ -32,7 +31,7 @@ export function useCreateEthereumTransactionForm(
         if (!_toAddress) {
           newErrors.set("toAddress", "Recipient address is required");
         } else {
-          const { valid } = await Ipc.isEthereumAddressValid(_toAddress);
+          const { valid } = await window.api.isEthereumAddressValid(_toAddress);
           if (!valid) {
             newErrors.set("toAddress", "Invalid recipient address");
           }

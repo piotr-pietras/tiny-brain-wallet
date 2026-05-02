@@ -6,7 +6,6 @@ import { Selector } from "../../components/Selector";
 import { useNavigate, useParams } from "react-router";
 import { Button } from "../../components/Button";
 import { NodesPersisterContext } from "../../context/nodesPersister";
-import { Ipc } from "../../ipc";
 import { EnterPasswordModal } from "../../modals/enter-password";
 import { Divider } from "../../components/Divider";
 import { NodeCard } from "../../components/NodeCard";
@@ -31,7 +30,7 @@ export default function DeriveNodeScreen() {
       const derivedOptions = await form.get();
       let nodeId = await getNodeId(walletFile!, derivedOptions);
       if (!nodeId && password) {
-        const newNode = await Ipc.getWalletNode(
+        const newNode = await window.api.getWalletNode(
           walletFile!,
           password,
           derivedOptions
@@ -73,7 +72,7 @@ export default function DeriveNodeScreen() {
       "Are you sure you want to delete this wallet?"
     );
     if (result) {
-      await Ipc.deleteWallet(walletFile!);
+      await window.api.deleteWallet(walletFile!);
       navigate("/");
     }
   };

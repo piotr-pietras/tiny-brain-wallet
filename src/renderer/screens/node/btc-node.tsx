@@ -14,7 +14,6 @@ import { Button } from "../../components/Button";
 import { UtxoCard } from "../../components/UtxoCard";
 import { NodesPersisterContext } from "../../context/nodesPersister";
 import { Divider } from "../../components/Divider";
-import { Ipc } from "../../ipc";
 import { toBtc } from "../../helpers/unit";
 
 export default function BtcNodeScreen() {
@@ -30,7 +29,7 @@ export default function BtcNodeScreen() {
     const node = getNode(nodeId!) as ReturnedBitcoinWalletNode;
     if (!node) throw new Error("Node not found");
 
-    const { overview, utxos } = await Ipc.getMempoolData(
+    const { overview, utxos } = await window.api.getMempoolData(
       node.address,
       node.derivedOptions.network
     );

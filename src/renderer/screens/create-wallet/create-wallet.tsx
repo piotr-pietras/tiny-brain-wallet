@@ -7,7 +7,6 @@ import { Divider } from "../../components/Divider";
 import { Input } from "../../components/Input";
 import { Button } from "../../components/Button";
 import { useNavigate } from "react-router";
-import { Ipc } from "../../ipc";
 import { wordlists } from "bip39";
 import { NoteBox } from "../../components/NoteBox";
 
@@ -24,7 +23,7 @@ export default function CreateWalletScreen() {
     try {
       setIsLoading(true);
       const wallet = await form.get();
-      await Ipc.storeWallet(wallet);
+      await window.api.storeWallet(wallet);
       navigate("/wallets");
     } finally {
       setIsLoading(false);

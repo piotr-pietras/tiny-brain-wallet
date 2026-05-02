@@ -1,6 +1,5 @@
 import React, { createContext, useState } from "react";
 import { DerivedOptions, ReturnedWalletNode } from "../../types";
-import { Ipc } from "../ipc";
 
 interface NodesPersisterContextType {
   setNode: (node: ReturnedWalletNode) => void;
@@ -45,7 +44,7 @@ export function NodesPersisterProvider({
     walletFile: string,
     derivedOptions: DerivedOptions
   ) => {
-    const derivedPath = await Ipc.derivePath(derivedOptions);
+    const derivedPath = await window.api.derivePath(derivedOptions);
     return Object.entries(nodes()).find(
       ([, node]) =>
         node.derivedPath === derivedPath &&

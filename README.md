@@ -134,13 +134,8 @@ The application follows a strict separation of concerns between the **main proce
 │  │  - No wallet file I/O                                │   │
 │  │  - No transaction signing                            │   │
 │  └──────────────────────────────────────────────────────┘   │
-│                          │                                  │
-│                          │ IPC Calls                        │
-│                          ▼                                  │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │  ipc.tsx (Ipc class)                                 │   │
-│  │  - Wrapper for window.api calls                      │   │
-│  └──────────────────────────────────────────────────────┘   │
+│                         │                                   │
+│                         │ window.api calls                  │
 └─────────────────────────────────────────────────────────────┘
                           │
                           │ contextBridge (preload.ts)
@@ -203,7 +198,6 @@ tiny-brain-wallet/
 │   ├── renderer/                      # Renderer process (Browser/UI)
 │   │   ├── index.tsx                  # React app entry point
 │   │   ├── _layout.tsx                # Root layout component
-│   │   ├── ipc.tsx                    # IPC client wrapper (calls window.api)
 │   │   ├── const.ts                   # Application constants
 │   │   │
 │   │   ├── components/                # Reusable UI components
