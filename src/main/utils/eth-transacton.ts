@@ -31,10 +31,11 @@ export class EthTransaction implements Signable<string> {
       from: inputs.wallet.address,
       to: inputs.toAddress,
       value: inputs.amount,
-      gasLimit: BigInt(ETH_TX_GAS_LIMIT),
+      gasLimit: inputs.gasLimit ?? BigInt(ETH_TX_GAS_LIMIT),
       gasPrice: inputs.gasPrice,
       nonce,
       chainId: this._chainId,
+      data: inputs.data,
     };
 
     return this;

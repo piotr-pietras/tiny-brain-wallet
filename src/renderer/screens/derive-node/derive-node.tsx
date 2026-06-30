@@ -9,14 +9,14 @@ import { NodesPersisterContext } from "../../context/nodesPersister";
 import { EnterPasswordModal } from "../../modals/enter-password";
 import { Divider } from "../../components/Divider";
 import { NodeCard } from "../../components/NodeCard";
-import { DerivedOptions } from "../../../types";
+import { DerivedOptions, ReturnedWalletNodeWithId } from "../../../types";
 import { Icon } from "../../components/Icon";
 
 export default function DeriveNodeScreen() {
   const { walletFile } = useParams();
   const navigate = useNavigate();
   const form = useDeriveNodeForm();
-  const { setNode, getNodeId, getNodes } = useContext(NodesPersisterContext);
+  const { setNode, getNodes } = useContext(NodesPersisterContext);
   const [showEnterPasswordModal, setShowEnterPasswordModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const currentNodes = useMemo(
@@ -24,24 +24,18 @@ export default function DeriveNodeScreen() {
     [walletFile, getNodes]
   );
 
-  const handleDeriveNode = async (password?: string) => {
+  const handleDeriveNode = async (password: string) => {
     try {
       setIsLoading(true);
       const derivedOptions = await form.get();
-      let nodeId = await getNodeId(walletFile!, derivedOptions);
-      if (!nodeId && password) {
-        const newNode = await window.api.getWalletNode(
-          walletFile!,
-          password,
-          derivedOptions
-        );
-        if (!newNode) throw new Error("Failed to derive node");
-        setNode(newNode);
-      } else if (!nodeId && !password) {
-        setShowEnterPasswordModal(true);
-        return;
-      }
-      nodeId = await getNodeId(walletFile!, derivedOptions);
+      const newNode = await window.api.getWalletNode(
+        walletFile!,
+        password,
+        derivedOptions
+      );
+      if (!newNode) throw new Error("Failed to derive node");
+      const nodeId = setNode(newNode);
+
       switch (derivedOptions.blockchain) {
         case "bitcoin":
           navigate(`/wallet/${walletFile}/btc-node/${nodeId}`);
@@ -55,14 +49,13 @@ export default function DeriveNodeScreen() {
     }
   };
 
-  const handleNodeClick = async (derivedOptions: DerivedOptions) => {
-    const nodeId = await getNodeId(walletFile!, derivedOptions);
-    switch (derivedOptions.blockchain) {
+  const handleNodeClick = async (node: ReturnedWalletNodeWithId) => {
+    switch (node.derivedOptions.blockchain) {
       case "bitcoin":
-        navigate(`/wallet/${walletFile}/btc-node/${nodeId}`);
+        navigate(`/wallet/${walletFile}/btc-node/${node.id}`);
         break;
       case "ethereum":
-        navigate(`/wallet/${walletFile}/eth-node/${nodeId}`);
+        navigate(`/wallet/${walletFile}/eth-node/${node.id}`);
         break;
     }
   };
@@ -89,8 +82,8 @@ export default function DeriveNodeScreen() {
         <View
           direction="row"
           gap={16}
+          full
           style={{
-            width: "100%",
             justifyContent: "space-between",
             alignItems: "center",
           }}
@@ -166,7 +159,7 @@ export default function DeriveNodeScreen() {
             loading={isLoading}
             text="Derive Node"
             type="primary"
-            onClick={() => handleDeriveNode()}
+            onClick={() => setShowEnterPasswordModal(true)}
           />
         </View>
         {currentNodes.length > 0 && (
@@ -181,7 +174,7 @@ export default function DeriveNodeScreen() {
                   <NodeCard
                     key={node.derivedPath}
                     node={node}
-                    onClick={() => handleNodeClick(node.derivedOptions)}
+                    onClick={() => handleNodeClick(node)}
                   />
                 ))}
               </View>

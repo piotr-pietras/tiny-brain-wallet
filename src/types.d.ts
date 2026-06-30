@@ -75,6 +75,10 @@ export type ReturnedWalletNode =
   | ReturnedBitcoinWalletNode
   | ReturnedEthereumWalletNode;
 
+export type ReturnedWalletNodeWithId = ReturnedWalletNode & {
+  id: string;
+};
+
 type BitcoinTransactionInputs = {
   wallet: ReturnedBitcoinWalletNode;
   selectedUtxos: Pick<UtxoMempool, "txid" | "vout">[];
@@ -90,6 +94,8 @@ export type EthereumTransactionInputs = {
   toAddress: string;
   amount: bigint;
   gasPrice: bigint;
+  data?: string;
+  gasLimit?: bigint;
 };
 
 export interface Signable<T> {
@@ -132,7 +138,28 @@ export interface BridgeApi {
     inputs: EthereumTransactionInputs,
     password: string
   ) => Promise<string>;
-  getEthereumContractFunctions: (abi: string) => Promise<ethers.FunctionFragment[]>;
+  getEthereumContractFunctions: (
+    abi: string
+  ) => Promise<ethers.FunctionFragment[]>;
+  checkEthereumContractInputs: (
+    contractInputs: EthereumContractInputs<any>
+  ) => Promise<{
+    valid: boolean;
+    code?: EthereumContractInputsError;
+    argument?: string;
+  }>;
+  callEthereumContract: (
+    contractInputs: EthereumContractInputs<any>
+  ) => Promise<string>;
+  estimateEthereumGas: (
+    node: ReturnedEthereumWalletNode,
+    contractInputs: EthereumContractInputs<any>
+  ) => Promise<string>;
+  mutateEthereumContract: (
+    inputs: Omit<EthereumTransactionInputs, "toAddress">,
+    contractInputs: EthereumContractInputs<any>,
+    password: string
+  ) => Promise<string>;
 }
 
 export type GetAddressResponse = {
@@ -197,10 +224,25 @@ export interface TxMempool {
 export type GetTxResponse = TxMempool;
 
 export type StoredEthContract = {
+  network: EthereumNetwork;
   name: string;
   address: string;
   abi: string;
- };
+};
+
+export type StoredEthContractWithId = StoredEthContract & {
+  id: string;
+};
+
+export type EthereumContractInputs<T> = {
+  contract: StoredEthContract;
+  functionName: string;
+  inputs: T;
+};
+
+export type EthereumContractInputsError =
+  | "MISSING_ARGUMENT"
+  | "INVALID_ARGUMENT";
 
 declare global {
   interface Window {

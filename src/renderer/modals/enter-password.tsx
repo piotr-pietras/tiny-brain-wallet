@@ -5,6 +5,7 @@ import { Text } from "../components/Text";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
 import { unwrapIpcError } from "../helpers/unwrapIpcError";
+import { BackgroundTint } from "./background-tint";
 
 type Props = {
   onAccept: (password: string) => Promise<void>;
@@ -29,20 +30,7 @@ export function EnterPasswordModal({ onCancel, onAccept }: Props) {
   };
 
   return (
-    <View
-      gap={16}
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        zIndex: 1000,
-      }}
-    >
+    <BackgroundTint>
       <Card>
         <View>
           <View>
@@ -76,6 +64,6 @@ export function EnterPasswordModal({ onCancel, onAccept }: Props) {
           </View>
         </View>
       </Card>
-    </View>
+    </BackgroundTint>
   );
 }

@@ -72,13 +72,12 @@ export default function BtcCreateTransactionScreen() {
       );
       setErrorMessage("");
       setTxId(result);
-      setShowSignTransactionModal(true);
-      setShowEnterPasswordModal(false);
     } catch (error) {
       if (unwrapIpcError(error).includes("Invalid wallet password")) {
         throw error;
       }
       setErrorMessage(unwrapIpcError(error));
+    } finally {
       setShowSignTransactionModal(true);
       setShowEnterPasswordModal(false);
     }
@@ -110,8 +109,8 @@ export default function BtcCreateTransactionScreen() {
         <Text type="title" bold>
           📝 Create Transaction
         </Text>
-        <View gap={16}>
-          <View>
+        <View full gap={16}>
+          <View full>
             <Text type="label">Send to address:</Text>
             <Input
               value={form.toAddress || ""}
@@ -181,7 +180,7 @@ export default function BtcCreateTransactionScreen() {
             />
             <Text type="label">💸 Fee: {form.overview.fee} satoshi</Text>
           </View>
-          <details>
+          <details style={{ width: "100%" }}>
             <summary style={{ cursor: "pointer" }}>Advanced options</summary>
             <View style={{ marginTop: 8 }}>
               <Text type="label">OP Return Data:</Text>

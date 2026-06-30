@@ -1,10 +1,10 @@
 import React, { createContext } from "react";
-import { StoredEthContract } from "../../types";
+import { StoredEthContract, StoredEthContractWithId } from "../../types";
 
 interface EthContractPersisterContextType {
   setEthContract: (ethContract: StoredEthContract) => void;
-  getEthContract: (id: string) => StoredEthContract | undefined;
-  getEthContracts: () => any[];
+  getEthContract: (id: string) => StoredEthContractWithId | undefined;
+  getEthContracts: () => StoredEthContractWithId[];
   deleteEthContract: (id: string) => void;
 }
 
@@ -27,12 +27,14 @@ export function EthContractPersisterProvider({
   const ethContracts = (): Record<string, any> =>
     JSON.parse(localStorage.getItem("ethContracts") || "{}");
 
-  const setEthContract = (ethContract: any) => {
+  const setEthContract = (ethContract: StoredEthContract) => {
+    const id = crypto.randomUUID();
     const newEthContracts = {
       ...ethContracts(),
-      [crypto.randomUUID()]: ethContract,
+      [id]: { ...ethContract, id },
     };
     localStorage.setItem("ethContracts", JSON.stringify(newEthContracts));
+    return id;
   };
 
   const getEthContract = (id: string) => {

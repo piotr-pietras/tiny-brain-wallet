@@ -39,11 +39,11 @@ export default function CreateWalletScreen() {
       <Text type="title" bold>
         🔑 Wallet private key creation
       </Text>
-      <View>
+      <View full>
         <Text type="label">
           Select one of the following options to create a wallet private key:
         </Text>
-        <View>
+        <View full>
           <Selector
             options={form.getPrivateKeyCreationWayOptions()}
             value={form.privateKeyCreationWay}
@@ -81,7 +81,6 @@ export default function CreateWalletScreen() {
                 type="info"
               />
               <Input
-                style={{ width: "100%" }}
                 placeholder="Enter the custom mnemonic"
                 multiline={true}
                 value={form.customMnemonic}

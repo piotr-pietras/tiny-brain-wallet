@@ -21,7 +21,7 @@ export function Selector<T extends string>({
       value={value}
       onChange={(e) => onChange(e.target.value as T)}
       style={{
-        width: "300px",
+        width: "350px",
         padding: "8px",
         fontSize: "16px",
         fontFamily: "inherit",

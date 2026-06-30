@@ -62,20 +62,18 @@ export default function EthCreateTransactionScreen() {
   const handleSign = async (password: string) => {
     const transactionInputs = await form.get();
     try {
-      console.log(password);
       const result = await window.api.sendEthereumTransaction(
         transactionInputs,
         password
       );
       setErrorMessage("");
       setTxId(result);
-      setShowSignTransactionModal(true);
-      setShowEnterPasswordModal(false);
     } catch (error) {
       if (unwrapIpcError(error).includes("Invalid wallet password")) {
         throw error;
       }
       setErrorMessage(unwrapIpcError(error));
+    } finally {
       setShowSignTransactionModal(true);
       setShowEnterPasswordModal(false);
     }
@@ -107,8 +105,8 @@ export default function EthCreateTransactionScreen() {
         <Text type="title" bold>
           📝 Create Transaction
         </Text>
-        <View gap={16}>
-          <View>
+        <View gap={16} full>
+          <View full>
             <Text type="label">Send to address:</Text>
             <Input
               value={form.toAddress || ""}

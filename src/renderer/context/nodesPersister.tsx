@@ -1,20 +1,15 @@
-import React, { createContext, useState } from "react";
-import { DerivedOptions, ReturnedWalletNode } from "../../types";
+import React, { createContext } from "react";
+import { ReturnedWalletNode, ReturnedWalletNodeWithId } from "../../types";
 
 interface NodesPersisterContextType {
-  setNode: (node: ReturnedWalletNode) => void;
-  getNodeId: (
-    walletFile: string,
-    derivedOptions: DerivedOptions
-  ) => Promise<string | undefined>;
-  getNode: (id: string) => ReturnedWalletNode | undefined;
-  getNodes: (walletFile: string) => ReturnedWalletNode[];
+  setNode: (node: ReturnedWalletNode) => string;
+  getNode: (id: string) => ReturnedWalletNodeWithId | undefined;
+  getNodes: (walletFile: string) => ReturnedWalletNodeWithId[];
   deleteNode: (id: string) => void;
 }
 
 export const NodesPersisterContext = createContext<NodesPersisterContextType>({
-  setNode: () => {},
-  getNodeId: () => Promise.resolve(undefined),
+  setNode: () => "",
   getNode: () => undefined,
   getNodes: () => [],
   deleteNode: () => {},
@@ -29,29 +24,17 @@ export function NodesPersisterProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const nodes = (): Record<string, ReturnedWalletNode> =>
+  const nodes = (): Record<string, ReturnedWalletNodeWithId> =>
     JSON.parse(localStorage.getItem("nodes") || "{}");
 
   const setNode = (node: ReturnedWalletNode) => {
+    const id = crypto.randomUUID();
     const newNodes = {
       ...nodes(),
-      [crypto.randomUUID()]: node,
+      [id]: { ...node, id },
     };
     localStorage.setItem("nodes", JSON.stringify(newNodes));
-  };
-
-  const getNodeId = async (
-    walletFile: string,
-    derivedOptions: DerivedOptions
-  ) => {
-    const derivedPath = await window.api.derivePath(derivedOptions);
-    return Object.entries(nodes()).find(
-      ([, node]) =>
-        node.derivedPath === derivedPath &&
-        node.walletFile === walletFile &&
-        node.derivedOptions.blockchain === derivedOptions.blockchain &&
-        node.derivedOptions.network === derivedOptions.network
-    )?.[0];
+    return id;
   };
 
   const getNode = (id: string) => {
@@ -75,7 +58,6 @@ export function NodesPersisterProvider({
       value={{
         setNode,
         getNode,
-        getNodeId,
         getNodes,
         deleteNode,
       }}

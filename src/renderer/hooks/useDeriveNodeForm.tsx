@@ -26,7 +26,7 @@ export function useDeriveNodeForm() {
       case "bitcoin":
         return ["mainnet", "testnet4", "easy-regtest"] as BitcoinNetwork[];
       case "ethereum":
-        return ["sepolia"] as EthereumNetwork[];
+        return ["mainnet", "sepolia"] as EthereumNetwork[];
       default:
         return [];
     }

@@ -5,6 +5,7 @@ import { Text } from "../components/Text";
 import { Button } from "../components/Button";
 import { NoteBox } from "../components/NoteBox";
 import { ReturnedWalletNode } from "../../types";
+import { BackgroundTint } from "./background-tint";
 
 type Props = {
   onDone: () => void;
@@ -41,21 +42,7 @@ export function TransactionResultModal({
   }, [txId, node.derivedOptions.network]);
 
   return (
-    <View
-      direction="column"
-      gap={16}
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        zIndex: 1000,
-      }}
-    >
+    <BackgroundTint>
       <Card>
         <View direction="column" gap={16} style={{}}>
           <Text type="title">Transaction Result</Text>
@@ -91,6 +78,6 @@ export function TransactionResultModal({
           </View>
         </View>
       </Card>
-    </View>
+    </BackgroundTint>
   );
 }

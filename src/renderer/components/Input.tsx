@@ -2,11 +2,11 @@ import React, { useMemo } from "react";
 import { Text } from "./Text";
 
 type Props = {
-  value: string;
+  value?: string;
   type?: "text" | "number" | "password";
   multiline?: boolean;
   rows?: number;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   placeholder?: string;
   style?: React.CSSProperties;
   name?: string;
@@ -30,7 +30,7 @@ export function Input({
 }: Props) {
   const commonStyle: React.CSSProperties = useMemo(
     () => ({
-      width: "600px",
+      width: "100%",
       padding: "8px",
       fontSize: "16px",
       fontFamily: "inherit",
@@ -56,7 +56,7 @@ export function Input({
           rows={multiline ? rows : 1}
           onChange={(e) => {
             name && form?.resetErrors(name);
-            onChange(e.target.value);
+            onChange?.(e.target.value);
           }}
           onBlur={() => {
             name && void form?.validate(name);
@@ -70,7 +70,7 @@ export function Input({
           value={value}
           onChange={(e) => {
             name && form?.resetErrors(name);
-            onChange(e.target.value);
+            onChange?.(e.target.value);
           }}
           onBlur={() => {
             name && void form?.validate(name);
