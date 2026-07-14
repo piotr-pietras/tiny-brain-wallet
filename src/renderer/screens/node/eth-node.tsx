@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import {
   ReturnedEthereumWalletNode,
   ReturnedWalletNode,
+  StoredEthContractWithId,
 } from "../../../types";
 import { Loader } from "../../components/Loader";
 import { Text } from "../../components/Text";
@@ -11,12 +12,15 @@ import { Icon } from "../../components/Icon";
 import { Button } from "../../components/Button";
 import { NodesPersisterContext } from "../../context/nodesPersister";
 import { Divider } from "../../components/Divider";
-import { Ipc } from "../../ipc";
 import { formatEther } from "ethers";
+import { Card } from "../../components/Card";
+import { EthContractPersisterContext } from "../../context/ethContractPersister";
 
 export default function EthNodeScreen() {
   const { walletFile, nodeId } = useParams();
   const { getNode, deleteNode } = useContext(NodesPersisterContext);
+  const { getEthContracts } = useContext(EthContractPersisterContext);
+
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [node, setNode] = useState<ReturnedWalletNode | null>(null);
@@ -25,7 +29,7 @@ export default function EthNodeScreen() {
   const loadNode = async () => {
     const node = getNode(nodeId!) as ReturnedEthereumWalletNode;
     if (!node) throw new Error("Node not found");
-    const balance = await Ipc.getEthereumBalance(
+    const balance = await window.api.getEthereumBalance(
       node.address,
       node.derivedOptions.network
     );
@@ -53,7 +57,19 @@ export default function EthNodeScreen() {
   };
 
   const handleCreateTransaction = () => {
-    navigate(`/wallet/${walletFile!}/eth-node/${nodeId!}/eth-create-transaction`);
+    navigate(
+      `/wallet/${walletFile!}/eth-node/${nodeId!}/eth-create-transaction`
+    );
+  };
+
+  const handleAddEthContract = () => {
+    navigate("/add-eth-contract");
+  };
+
+  const handleCallEthContract = (contract: StoredEthContractWithId) => {
+    navigate(
+      `/wallet/${walletFile!}/eth-node/${nodeId!}/execute-eth-contract/${contract.id}`
+    );
   };
 
   useEffect(() => {
@@ -73,8 +89,8 @@ export default function EthNodeScreen() {
       <View
         direction="row"
         gap={16}
+        full
         style={{
-          width: "100%",
           justifyContent: "space-between",
           alignItems: "center",
         }}
@@ -119,7 +135,7 @@ export default function EthNodeScreen() {
           <Text type="label">Total Balance</Text>
           <Text bold>{formatEther(BigInt(balance))} ETH</Text>
         </View>
-        <View gap={0} style={{ width: "100%" }}>
+        <View gap={0} full>
           <Text type="label">
             In order to see the transaction history any many more you have to
             visit mempool website:
@@ -134,6 +150,27 @@ export default function EthNodeScreen() {
         </View>
       </View>
       <Divider />
+      <View direction="row" gap={16}>
+        <Text type="title" bold>
+          📜 Contracts
+        </Text>
+        <Button
+          onClick={handleAddEthContract}
+          text="Add Contract"
+          type="primary"
+        />
+      </View>
+
+      <View direction="row" gap={16}>
+        {getEthContracts().map((contract) => (
+          <Card
+            key={contract.address}
+            onClick={() => handleCallEthContract(contract)}
+          >
+            <Text type="label">{contract.name}</Text>
+          </Card>
+        ))}
+      </View>
     </View>
   );
 }

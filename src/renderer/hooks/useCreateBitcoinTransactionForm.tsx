@@ -5,7 +5,6 @@ import {
   ReturnedWalletNode,
   UtxoMempool,
 } from "../../types";
-import { Ipc } from "../ipc";
 import {
   OP_RETURN_HEADER_SIZE,
   OP_RETURN_MAX_SIZE,
@@ -90,7 +89,9 @@ export function useCreateBitcoinTransactionForm(
         if (!_toAddress) {
           newErrors.set("toAddress", "Recipient address is required");
         } else {
-          const { valid, network } = await Ipc.isBitcoinAddressValid(_toAddress);
+          const { valid, network } = await window.api.isBitcoinAddressValid(
+            _toAddress
+          );
           if (!valid || wallet?.derivedOptions.network !== network) {
             newErrors.set("toAddress", "Invalid recipient address");
           }

@@ -7,7 +7,6 @@ import { Divider } from "../../components/Divider";
 import { Input } from "../../components/Input";
 import { Button } from "../../components/Button";
 import { useNavigate } from "react-router";
-import { Ipc } from "../../ipc";
 import { wordlists } from "bip39";
 import { NoteBox } from "../../components/NoteBox";
 
@@ -24,7 +23,7 @@ export default function CreateWalletScreen() {
     try {
       setIsLoading(true);
       const wallet = await form.get();
-      await Ipc.storeWallet(wallet);
+      await window.api.storeWallet(wallet);
       navigate("/wallets");
     } finally {
       setIsLoading(false);
@@ -40,11 +39,11 @@ export default function CreateWalletScreen() {
       <Text type="title" bold>
         🔑 Wallet private key creation
       </Text>
-      <View>
+      <View full>
         <Text type="label">
           Select one of the following options to create a wallet private key:
         </Text>
-        <View>
+        <View full>
           <Selector
             options={form.getPrivateKeyCreationWayOptions()}
             value={form.privateKeyCreationWay}
@@ -82,7 +81,6 @@ export default function CreateWalletScreen() {
                 type="info"
               />
               <Input
-                style={{ width: "100%" }}
                 placeholder="Enter the custom mnemonic"
                 multiline={true}
                 value={form.customMnemonic}

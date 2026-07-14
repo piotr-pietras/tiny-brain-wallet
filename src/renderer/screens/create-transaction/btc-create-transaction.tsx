@@ -13,7 +13,6 @@ import {
   ReturnedBitcoinWalletNode,
 } from "../../../types";
 import { NodesPersisterContext } from "../../context/nodesPersister";
-import { Ipc } from "../../ipc";
 import { EnterPasswordModal } from "../../modals/enter-password";
 import { unwrapIpcError } from "../../helpers/unwrapIpcError";
 import { useCreateBitcoinTransactionForm } from "../../hooks/useCreateBitcoinTransactionForm";
@@ -37,7 +36,7 @@ export default function BtcCreateTransactionScreen() {
     const node = getNode(nodeId!) as ReturnedBitcoinWalletNode;
     if (!node) throw new Error("Node not found");
 
-    const { utxos } = await Ipc.getMempoolData(
+    const { utxos } = await window.api.getMempoolData(
       node.address,
       node.derivedOptions.network
     );
@@ -67,19 +66,15 @@ export default function BtcCreateTransactionScreen() {
   const handleSign = async (password: string) => {
     const transactionInputs = await form.get();
     try {
-      const result = await Ipc.sendBitcoinTransaction(
+      const result = await window.api.sendBitcoinTransaction(
         transactionInputs,
         password
       );
       setErrorMessage("");
       setTxId(result);
-      setShowSignTransactionModal(true);
-      setShowEnterPasswordModal(false);
     } catch (error) {
-      if (unwrapIpcError(error).includes("Invalid wallet password")) {
-        throw error;
-      }
       setErrorMessage(unwrapIpcError(error));
+    } finally {
       setShowSignTransactionModal(true);
       setShowEnterPasswordModal(false);
     }
@@ -105,14 +100,15 @@ export default function BtcCreateTransactionScreen() {
         <EnterPasswordModal
           onCancel={() => setShowEnterPasswordModal(false)}
           onAccept={handleSign}
+          errorMessage={errorMessage}
         />
       )}
       <View style={{ padding: "16px" }} gap={16}>
         <Text type="title" bold>
           📝 Create Transaction
         </Text>
-        <View gap={16}>
-          <View>
+        <View full gap={16}>
+          <View full>
             <Text type="label">Send to address:</Text>
             <Input
               value={form.toAddress || ""}
@@ -182,7 +178,7 @@ export default function BtcCreateTransactionScreen() {
             />
             <Text type="label">💸 Fee: {form.overview.fee} satoshi</Text>
           </View>
-          <details>
+          <details style={{ width: "100%" }}>
             <summary style={{ cursor: "pointer" }}>Advanced options</summary>
             <View style={{ marginTop: 8 }}>
               <Text type="label">OP Return Data:</Text>

@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import { BitcoinNetwork, PrivateKeyCreationWay, ToStoreWalletData } from "../../types";
-import { Ipc } from "../ipc";
 
 const XPRV_BASE58_RE = /^xprv[1-9A-HJ-NP-Za-km-z]{107}$/;
 
@@ -27,7 +26,7 @@ export function useCreateWalletForm() {
   );
 
   const generateMnemonic = useCallback(async () => {
-    const mnemonic = await Ipc.generateMnemonic();
+    const mnemonic = await window.api.generateMnemonic();
     _setMnemonic(mnemonic.split(" "));
   }, [_setMnemonic, _mnemonic]);
 

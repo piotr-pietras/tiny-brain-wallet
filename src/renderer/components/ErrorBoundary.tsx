@@ -2,7 +2,6 @@ import React from "react";
 import { Text } from "./Text";
 import { Button } from "./Button";
 import { View } from "./View";
-import { Ipc } from "../ipc";
 
 export class ErrorBoundary extends React.Component<
   {
@@ -56,9 +55,13 @@ export class ErrorBoundary extends React.Component<
             with the developer via GitHub Issues describing the reproduction
             steps. 🙏
           </Text>
-          <Button type="primary" text="Restart App" onClick={() => {
-            Ipc.restartWindow();
-          }} />
+          <Button
+            type="primary"
+            text="Restart App"
+            onClick={() => {
+              window.api.restartWindow();
+            }}
+          />
         </View>
       );
     } else {

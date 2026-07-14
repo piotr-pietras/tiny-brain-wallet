@@ -14,13 +14,12 @@ import { Button } from "../../components/Button";
 import { UtxoCard } from "../../components/UtxoCard";
 import { NodesPersisterContext } from "../../context/nodesPersister";
 import { Divider } from "../../components/Divider";
-import { Ipc } from "../../ipc";
 import { toBtc } from "../../helpers/unit";
 
 export default function BtcNodeScreen() {
+  const navigate = useNavigate();
   const { walletFile, nodeId } = useParams();
   const { getNode, deleteNode } = useContext(NodesPersisterContext);
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [node, setNode] = useState<ReturnedWalletNode | null>(null);
   const [overview, setOverview] = useState<GetAddressResponse | null>(null);
@@ -30,7 +29,7 @@ export default function BtcNodeScreen() {
     const node = getNode(nodeId!) as ReturnedBitcoinWalletNode;
     if (!node) throw new Error("Node not found");
 
-    const { overview, utxos } = await Ipc.getMempoolData(
+    const { overview, utxos } = await window.api.getMempoolData(
       node.address,
       node.derivedOptions.network
     );
@@ -101,8 +100,8 @@ export default function BtcNodeScreen() {
       <View
         direction="row"
         gap={16}
+        full
         style={{
-          width: "100%",
           justifyContent: "space-between",
           alignItems: "center",
         }}
@@ -157,7 +156,7 @@ export default function BtcNodeScreen() {
             <Text>{displayableData.unconfirmedBalance} BTC</Text>
           </View>
         )}
-        <View gap={0} style={{ width: "100%" }}>
+        <View gap={0} full>
           <Text type="label">
             In order to see the transaction history any many more you have to
             visit mempool website:
@@ -172,7 +171,7 @@ export default function BtcNodeScreen() {
         </View>
       </View>
       <Divider />
-      <View gap={16} style={{ width: "100%" }}>
+      <View gap={16} full>
         <View direction="row">
           <Text type="title" bold>
             📃 Usable UTXOs

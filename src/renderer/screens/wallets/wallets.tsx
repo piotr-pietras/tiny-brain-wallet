@@ -7,7 +7,6 @@ import { Card } from "../../components/Card";
 import { Text } from "../../components/Text";
 import { Icon } from "../../components/Icon";
 import { useNavigate } from "react-router";
-import { Ipc } from "../../ipc";
 
 export default function WalletsScreen() {
   const [loading, setLoading] = useState(true);
@@ -16,7 +15,7 @@ export default function WalletsScreen() {
 
   const loadWallets = async () => {
     setLoading(true);
-    const wallets = await Ipc.getWallets();
+    const wallets = await window.api.getWallets();
     setWallets(wallets);
     setLoading(false);
   };
@@ -56,7 +55,13 @@ export default function WalletsScreen() {
         }}
         onClick={handleCreateWallet}
       >
-        <Icon name="plus" width={56} height={56} color="var(--primary)" />
+        <Icon
+          name="plus"
+          width={56}
+          height={56}
+          color="var(--primary)"
+          interactive={false}
+        />
         <Text type="label">Create new wallet</Text>
       </Card>
     </View>

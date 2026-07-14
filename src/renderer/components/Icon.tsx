@@ -137,9 +137,10 @@ type Props = {
   height?: number;
   color?: string;
   onClick?: () => void;
+  interactive?: boolean;
 };
 
-export function Icon({ name, width = 24, height = 24, color, onClick }: Props) {
+export function Icon({ name, width = 24, height = 24, color, onClick, interactive = true }: Props) {
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
   const IconComponent = Icons[name];
@@ -167,17 +168,17 @@ export function Icon({ name, width = 24, height = 24, color, onClick }: Props) {
     <div
       style={{
         ...interactionStyle,
-        cursor: "pointer",
+        cursor: interactive ? "pointer" : undefined,
         transition: "opacity 0.2s ease, scale 0.2s ease",
       }}
       onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={() => interactive && setIsHovered(true)}
       onMouseLeave={() => {
-        setIsHovered(false);
-        setIsPressed(false);
+        interactive && setIsHovered(false);
+        interactive && setIsPressed(false);
       }}
-      onMouseDown={() => setIsPressed(true)}
-      onMouseUp={() => setIsPressed(false)}
+      onMouseDown={() => interactive && setIsPressed(true)}
+      onMouseUp={() => interactive && setIsPressed(false)}
     >
       <IconComponent width={width} height={height} color={color} />
     </div>

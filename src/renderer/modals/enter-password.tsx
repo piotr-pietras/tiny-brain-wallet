@@ -4,45 +4,30 @@ import { Card } from "../components/Card";
 import { Text } from "../components/Text";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
-import { unwrapIpcError } from "../helpers/unwrapIpcError";
+import { BackgroundTint } from "./background-tint";
 
 type Props = {
   onAccept: (password: string) => Promise<void>;
   onCancel: () => void;
+  errorMessage?: string | null;
 };
 
-export function EnterPasswordModal({ onCancel, onAccept }: Props) {
+export function EnterPasswordModal({
+  onCancel,
+  onAccept,
+  errorMessage,
+}: Props) {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const [password, setPassword] = useState("");
 
   const handleAccept = async () => {
-    try {
-      setIsLoading(true);
-      setError("");
-      await onAccept(password);
-    } catch (error) {
-      setError(unwrapIpcError(error));
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(true);
+    await onAccept(password);
+    setIsLoading(false);
   };
 
   return (
-    <View
-      gap={16}
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        zIndex: 1000,
-      }}
-    >
+    <BackgroundTint>
       <Card>
         <View>
           <View>
@@ -53,9 +38,9 @@ export function EnterPasswordModal({ onCancel, onAccept }: Props) {
               placeholder="Enter the wallet's password"
               type="password"
             />
-            {error && (
+            {errorMessage && (
               <Text type="label" style={{ color: "var(--error)" }}>
-                {error}
+                {errorMessage}
               </Text>
             )}
           </View>
@@ -76,6 +61,6 @@ export function EnterPasswordModal({ onCancel, onAccept }: Props) {
           </View>
         </View>
       </Card>
-    </View>
+    </BackgroundTint>
   );
 }

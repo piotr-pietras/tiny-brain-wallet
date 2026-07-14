@@ -8,14 +8,16 @@ import CreateWalletScreen from "./screens/create-wallet/create-wallet";
 import BtcNodeScreen from "./screens/node/btc-node";
 import Header from "./components/Header";
 import DeriveNodeScreen from "./screens/derive-node/derive-node";
-import { NodesPersisterProvider } from "./context/nodesPersister";
 import EthNodeScreen from "./screens/node/eth-node";
 import BtcCreateTransactionScreen from "./screens/create-transaction/btc-create-transaction";
 import EthCreateTransactionScreen from "./screens/create-transaction/eth-create-transaction";
+import AddEthContractScreen from "./screens/eth-contract/add-eth-contract";
+import ExecuteEthContractScreen from "./screens/eth-contract/execute-eth-contract";
+import { ContextProviders } from "./context";
 
 function App() {
   return (
-    <NodesPersisterProvider>
+    <ContextProviders>
       <HashRouter>
         <Routes>
           <Route element={<AppLayout />}>
@@ -45,11 +47,21 @@ function App() {
                 path="/wallet/:walletFile/eth-node/:nodeId/eth-create-transaction"
                 element={<EthCreateTransactionScreen />}
               />
+              <Route
+                path="/wallet/:walletFile/eth-node/:nodeId/execute-eth-contract/:contractId"
+                element={<ExecuteEthContractScreen />}
+              />
+            </Route>
+            <Route element={<Header />}>
+              <Route
+                path="/add-eth-contract"
+                element={<AddEthContractScreen />}
+              />
             </Route>
           </Route>
         </Routes>
       </HashRouter>
-    </NodesPersisterProvider>
+    </ContextProviders>
   );
 }
 

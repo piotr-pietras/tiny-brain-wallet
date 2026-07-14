@@ -9,7 +9,6 @@ import { Button } from "../../components/Button";
 import { TransactionResultModal } from "../../modals/transaction-result";
 import { ReturnedEthereumWalletNode } from "../../../types";
 import { NodesPersisterContext } from "../../context/nodesPersister";
-import { Ipc } from "../../ipc";
 import { EnterPasswordModal } from "../../modals/enter-password";
 import { unwrapIpcError } from "../../helpers/unwrapIpcError";
 import { useCreateEthereumTransactionForm } from "../../hooks/useCreateEthereumTransactionForm";
@@ -33,7 +32,7 @@ export default function EthCreateTransactionScreen() {
     const node = getNode(nodeId!) as ReturnedEthereumWalletNode;
     if (!node) throw new Error("Node not found");
 
-    const balance = await Ipc.getEthereumBalance(
+    const balance = await window.api.getEthereumBalance(
       node.address,
       node.derivedOptions.network
     );
@@ -63,20 +62,15 @@ export default function EthCreateTransactionScreen() {
   const handleSign = async (password: string) => {
     const transactionInputs = await form.get();
     try {
-      console.log(password);
-      const result = await Ipc.sendEthereumTransaction(
+      const result = await window.api.sendEthereumTransaction(
         transactionInputs,
         password
       );
       setErrorMessage("");
       setTxId(result);
-      setShowSignTransactionModal(true);
-      setShowEnterPasswordModal(false);
     } catch (error) {
-      if (unwrapIpcError(error).includes("Invalid wallet password")) {
-        throw error;
-      }
       setErrorMessage(unwrapIpcError(error));
+    } finally {
       setShowSignTransactionModal(true);
       setShowEnterPasswordModal(false);
     }
@@ -108,8 +102,8 @@ export default function EthCreateTransactionScreen() {
         <Text type="title" bold>
           📝 Create Transaction
         </Text>
-        <View gap={16}>
-          <View>
+        <View gap={16} full>
+          <View full>
             <Text type="label">Send to address:</Text>
             <Input
               value={form.toAddress || ""}

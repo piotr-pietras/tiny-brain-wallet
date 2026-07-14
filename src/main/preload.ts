@@ -11,7 +11,12 @@ import {
   GetAddressUtxosResponse,
   EthereumNetwork,
   EthereumTransactionInputs,
+  StoredEthContract,
+  ReturnedEthereumWalletNode,
+  EthereumContractInputs,
+  EthereumContractInputsError,
 } from "../types";
+import { ethers } from "ethers";
 
 const bridgeApi: BridgeApi = {
   versions: () => process.versions,
@@ -33,7 +38,10 @@ const bridgeApi: BridgeApi = {
     overview: GetAddressResponse;
     utxos: GetAddressUtxosResponse;
   }> => ipcRenderer.invoke("get-mempool-data", address, network),
-  getEthereumBalance: (address: string, network: EthereumNetwork): Promise<string> =>
+  getEthereumBalance: (
+    address: string,
+    network: EthereumNetwork
+  ): Promise<string> =>
     ipcRenderer.invoke("get-ethereum-balance", address, network),
   deleteWallet: (file: string) => ipcRenderer.invoke("delete-wallet", file),
   derivePath: (derivedOptions: DerivedOptions): Promise<string> =>
@@ -44,9 +52,7 @@ const bridgeApi: BridgeApi = {
     address: string
   ): Promise<{ valid: boolean; network: BitcoinNetwork }> =>
     ipcRenderer.invoke("is-bitcoin-address-valid", address),
-  isEthereumAddressValid: (
-    address: string
-  ): Promise<{ valid: boolean }> =>
+  isEthereumAddressValid: (address: string): Promise<{ valid: boolean }> =>
     ipcRenderer.invoke("is-ethereum-address-valid", address),
   sendBitcoinTransaction: (
     inputs: BitcoinTransactionInputs,
@@ -58,6 +64,37 @@ const bridgeApi: BridgeApi = {
     password: string
   ): Promise<string> =>
     ipcRenderer.invoke("send-ethereum-transaction", inputs, password),
+  getEthereumContractFunctions: (
+    abi: string
+  ): Promise<ethers.FunctionFragment[]> =>
+    ipcRenderer.invoke("get-ethereum-contract-functions", abi),
+  checkEthereumContractInputs: (
+    contractInputs: EthereumContractInputs<any>
+  ): Promise<{
+    valid: boolean;
+    code?: EthereumContractInputsError;
+    argument?: string;
+  }> => ipcRenderer.invoke("check-ethereum-contract-inputs", contractInputs),
+  callEthereumContract: (
+    contractInputs: EthereumContractInputs<any>
+  ): Promise<string> =>
+    ipcRenderer.invoke("call-ethereum-contract", contractInputs),
+  estimateEthereumGas: (
+    node: ReturnedEthereumWalletNode,
+    contractInputs: EthereumContractInputs<any>
+  ): Promise<string> =>
+    ipcRenderer.invoke("estimate-ethereum-gas", node, contractInputs),
+  mutateEthereumContract: (
+    inputs: Omit<EthereumTransactionInputs, "toAddress">,
+    contractInputs: EthereumContractInputs<any>,
+    password: string
+  ): Promise<string> =>
+    ipcRenderer.invoke(
+      "mutate-ethereum-contract",
+      inputs,
+      contractInputs,
+      password
+    ),
 };
 
 contextBridge.exposeInMainWorld("api", bridgeApi);

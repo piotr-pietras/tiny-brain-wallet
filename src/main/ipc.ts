@@ -7,6 +7,10 @@ import {
   BitcoinNetwork,
   EthereumNetwork,
   EthereumTransactionInputs,
+  StoredEthContract,
+  ReturnedEthereumWalletNode,
+  EthereumContractInputs,
+  EthereumContractInputsError,
 } from "../types";
 import { Wallet } from "./utils/wallet";
 import { Crypto } from "./utils/crypto";
@@ -19,6 +23,7 @@ import { HD } from "./utils/hd";
 import { EthAddress } from "./utils/eth-address";
 import { DrpcClient } from "./utils/drpc-client";
 import { EthTransaction } from "./utils/eth-transacton";
+import { ethers } from "ethers";
 
 export const registerHandlers = () => {
   ipcMain.handle("restart-window", () => restartWindow());
@@ -128,6 +133,99 @@ export const registerHandlers = () => {
       const drpc = new DrpcClient(derivedOptions.network);
       const transaction = new EthTransaction(drpc);
       await transaction.create(inputs);
+      const txHex = await Wallet.signTransaction(
+        walletFile,
+        derivedOptions,
+        transaction,
+        password
+      );
+      const result = await drpc.sendRawTransaction(txHex);
+      return result;
+    }
+  );
+  ipcMain.handle("get-ethereum-contract-functions", async (_, abi: string) => {
+    return new ethers.Interface(abi).fragments.filter(
+      (fragment: any): fragment is ethers.FunctionFragment =>
+        fragment.type === "function"
+    ) as ethers.FunctionFragment[];
+  });
+  ipcMain.handle(
+    "check-ethereum-contract-inputs",
+    async (_, contractInputs: EthereumContractInputs<any>) => {
+      try {
+        const { contract, functionName, inputs } = contractInputs;
+        const iface = new ethers.Interface(contract.abi);
+        iface.encodeFunctionData(functionName, inputs);
+        return { valid: true };
+      } catch (error: any) {
+        switch (error.code as EthereumContractInputsError) {
+          case "INVALID_ARGUMENT":
+            return {
+              valid: false,
+              code: "INVALID_ARGUMENT",
+              argument: error.argument,
+            };
+          default:
+            return { valid: false, code: error.code };
+        }
+      }
+    }
+  );
+  ipcMain.handle(
+    "call-ethereum-contract",
+    async (_, contractInputs: EthereumContractInputs<any>) => {
+      const { contract, functionName, inputs } = contractInputs;
+      const iface = new ethers.Interface(contract.abi);
+      const functionData = iface.encodeFunctionData(functionName, inputs);
+      const drpc = new DrpcClient(contract.network);
+
+      const result = await drpc.call(contract.address, functionData);
+      const decodedResult = iface.decodeFunctionResult(functionName, result);
+      return decodedResult.toString();
+    }
+  );
+  ipcMain.handle(
+    "estimate-ethereum-gas",
+    async (
+      _,
+      node: ReturnedEthereumWalletNode,
+      contractInputs: EthereumContractInputs<any>
+    ) => {
+      const { contract, functionName, inputs } = contractInputs;
+      const iface = new ethers.Interface(contract.abi);
+      const functionData = iface.encodeFunctionData(functionName, inputs);
+      const drpc = new DrpcClient(contract.network);
+
+      const result = await drpc.estimateGas(
+        node.address,
+        contract.address,
+        functionData
+      );
+      return result;
+    }
+  );
+  ipcMain.handle(
+    "mutate-ethereum-contract",
+    async (
+      _,
+      inputs: Omit<EthereumTransactionInputs, "toAddress">,
+      contractInputs: EthereumContractInputs<any>,
+      password: string
+    ) => {
+      const { walletFile, derivedOptions } = inputs.wallet;
+      const iface = new ethers.Interface(contractInputs.contract.abi);
+      const functionData = iface.encodeFunctionData(
+        contractInputs.functionName,
+        contractInputs.inputs
+      );
+      const drpc = new DrpcClient(derivedOptions.network);
+      const transaction = new EthTransaction(drpc);
+      await transaction.create({
+        ...inputs,
+        data: functionData,
+        toAddress: contractInputs.contract.address,
+        gasLimit: BigInt(inputs.gasLimit!),
+      });
       const txHex = await Wallet.signTransaction(
         walletFile,
         derivedOptions,
