@@ -13,12 +13,12 @@ type Props = {
   errorMessage: string | null;
 };
 
-export function ContractResultModal({ onDone, result, errorMessage }: Props) {
+export function ContractCallResultModal({ onDone, result, errorMessage }: Props) {
   return (
     <BackgroundTint>
       <Card>
         <View direction="column" gap={16}>
-          <Text type="title">Contract Result</Text>
+          <Text type="title">Contract Call Result</Text>
           {errorMessage && <NoteBox type="error" text={errorMessage} />}
           {result && <Input value={result} type="text" />}
 

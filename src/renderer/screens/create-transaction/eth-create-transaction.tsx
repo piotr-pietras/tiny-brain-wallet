@@ -69,9 +69,6 @@ export default function EthCreateTransactionScreen() {
       setErrorMessage("");
       setTxId(result);
     } catch (error) {
-      if (unwrapIpcError(error).includes("Invalid wallet password")) {
-        throw error;
-      }
       setErrorMessage(unwrapIpcError(error));
     } finally {
       setShowSignTransactionModal(true);

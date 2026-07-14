@@ -73,9 +73,6 @@ export default function BtcCreateTransactionScreen() {
       setErrorMessage("");
       setTxId(result);
     } catch (error) {
-      if (unwrapIpcError(error).includes("Invalid wallet password")) {
-        throw error;
-      }
       setErrorMessage(unwrapIpcError(error));
     } finally {
       setShowSignTransactionModal(true);
@@ -103,6 +100,7 @@ export default function BtcCreateTransactionScreen() {
         <EnterPasswordModal
           onCancel={() => setShowEnterPasswordModal(false)}
           onAccept={handleSign}
+          errorMessage={errorMessage}
         />
       )}
       <View style={{ padding: "16px" }} gap={16}>

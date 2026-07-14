@@ -16,12 +16,12 @@ import { unwrapIpcError } from "../../helpers/unwrapIpcError";
 import { useExecuteEthereumContractForm } from "../../hooks/useExecuteEthereumContractForm";
 import { Icon } from "../../components/Icon";
 import { EnterPasswordModal } from "../../modals/enter-password";
-import { ContractResultModal } from "../../modals/contract-result";
 import { NodesPersisterContext } from "../../context/nodesPersister";
 import { Selector } from "../../components/Selector";
 import { ETH_TX_GAS_LIMIT } from "../../const";
 import { NoteBox } from "../../components/NoteBox";
 import { TransactionResultModal } from "../../modals/transaction-result";
+import { ContractCallResultModal } from "../../modals/contract-call-result";
 
 export default function ExecuteEthContractScreen() {
   const navigate = useNavigate();
@@ -49,9 +49,7 @@ export default function ExecuteEthContractScreen() {
 
   const [callResult, setCallResult] = useState<string | null>(null);
   const [callErrorMessage, setCallErrorMessage] = useState<string | null>(null);
-  const [estimateGasResult, setEstimateGasResult] = useState<string | null>(
-    null
-  );
+  const [estimateGas, setEstimateGas] = useState<string | null>(null);
 
   const mutabilityIcon = (mutability: string) => {
     switch (mutability) {
@@ -77,6 +75,7 @@ export default function ExecuteEthContractScreen() {
     if (!functions) throw new Error("Failed to get contract functions");
     setContract(contract);
     setFunctions(functions);
+    if (functions.length > 0) setSelectedFunction(functions[0]);
 
     const node = getNode(nodeId!) as ReturnedEthereumWalletNode;
     if (!node) throw new Error("Node not found");
@@ -151,9 +150,6 @@ export default function ExecuteEthContractScreen() {
       setErrorMessage("");
       setTxId(result);
     } catch (error) {
-      if (unwrapIpcError(error).includes("Invalid wallet password")) {
-        throw error;
-      }
       setErrorMessage(unwrapIpcError(error));
     } finally {
       setShowSignTransactionModal(true);
@@ -170,20 +166,29 @@ export default function ExecuteEthContractScreen() {
 
   const handleDone = () => {
     setShowCallResultModal(false);
+    setShowSignTransactionModal(false);
     setShowEnterPasswordModal(false);
     setCallResult(null);
     setCallErrorMessage(null);
-    setEstimateGasResult(null);
-    if (txId && !errorMessage) navigate(-1);
+    setEstimateGas(null);
+    if (txId && !errorMessage) {
+      setTxId(null);
+      navigate(-1);
+    }
   };
 
   const handleEstimateGas = async () => {
-    const result = await window.api.estimateEthereumGas(node!, {
-      contract: contract!,
-      functionName: selectedFunction!.name,
-      inputs: await form.get(),
-    });
-    setEstimateGasResult(BigInt(result).toString());
+    try {
+      const result = await window.api.estimateEthereumGas(node!, {
+        contract: contract!,
+        functionName: selectedFunction!.name,
+        inputs: await form.get(),
+      });
+      setEstimateGas(BigInt(result).toString());
+    } catch (error) {
+      setCallErrorMessage(unwrapIpcError(error));
+      setShowCallResultModal(true);
+    }
   };
 
   useEffect(() => {
@@ -212,7 +217,7 @@ export default function ExecuteEthContractScreen() {
         />
       )}
       {showCallResultModal && (
-        <ContractResultModal
+        <ContractCallResultModal
           onDone={handleDone}
           result={callResult}
           errorMessage={callErrorMessage}
@@ -222,6 +227,7 @@ export default function ExecuteEthContractScreen() {
         <EnterPasswordModal
           onCancel={() => setShowEnterPasswordModal(false)}
           onAccept={handleSign}
+          errorMessage={errorMessage}
         />
       )}
       <View style={{ padding: "16px" }} gap={16}>
@@ -301,23 +307,37 @@ export default function ExecuteEthContractScreen() {
               )}
             </View>
 
-            <View>
-              <Text type="label">Gas price (wei):</Text>
-              <Input
-                type="number"
-                value={form.gasPrice}
-                onChange={form.setGasPrice}
-                form={form}
-                name="gasPrice"
-              />
-              <Text type="label">
-                📌 equals to {toGwei(form.overview.gasPrice)} Gwei
-              </Text>
-              <Text type="label">
-                💸 Fee:
-                {toEth(form.overview.gasPrice * BigInt(ETH_TX_GAS_LIMIT))} ETH
-              </Text>
-            </View>
+            {selectedFunction.stateMutability === "nonpayable" && (
+              <View>
+                <Text type="label">Gas price (wei):</Text>
+                <Input
+                  type="number"
+                  value={form.gasPrice}
+                  onChange={form.setGasPrice}
+                  form={form}
+                  name="gasPrice"
+                />
+                <Text type="label">
+                  📌 equals to {toGwei(form.overview.gasPrice)} Gwei
+                </Text>
+
+                {estimateGas && (
+                  <>
+                    <Text type="label">
+                      💸 Fee:
+                      {toEth(
+                        form.overview.gasPrice * BigInt(ETH_TX_GAS_LIMIT)
+                      )}{" "}
+                      ETH
+                    </Text>
+                    <Text type="label">
+                      🧯 Estimated gas:
+                      {toGwei(BigInt(estimateGas))} Gwei
+                    </Text>
+                  </>
+                )}
+              </View>
+            )}
           </View>
         )}
 
@@ -337,21 +357,23 @@ export default function ExecuteEthContractScreen() {
                 );
               case "nonpayable":
                 return (
-                  <Button
-                    loading={isLoading}
-                    text="Mutate"
-                    type="primary"
-                    onClick={handleMutate}
-                  />
+                  <>
+                    <Button
+                      loading={isLoading}
+                      text="Mutate"
+                      type="primary"
+                      onClick={handleMutate}
+                    />
+                    <Button
+                      loading={isLoading}
+                      text="Estimate Gas & Check Validity"
+                      type="text"
+                      onClick={handleEstimateGas}
+                    />
+                  </>
                 );
             }
           })()}
-          <Button
-            loading={isLoading}
-            text="Estimate Gas"
-            type="text"
-            onClick={handleEstimateGas}
-          />
         </View>
       </View>
     </>
